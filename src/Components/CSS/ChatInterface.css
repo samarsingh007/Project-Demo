@@ -1,6 +1,7 @@
 .chat-section {
   flex: 1;
   padding: 20px;
+  max-width: 30%;
 }
 
 .chat-section h2 {
@@ -27,6 +28,7 @@
   border-radius: 10px;
   margin-bottom: 10px;
   max-width: 70%;
+  word-wrap: break-word;
 }
 
 .chat-message.bot {
@@ -42,6 +44,9 @@
   margin-right: 10px;
 }
 
+.message-timestamp {
+  color: #0079fa;
+}
 
 .input-container {
   display: flex;

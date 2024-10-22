@@ -1,31 +1,34 @@
+.video-chat-container {
+  display: flex;
+}
+
 .video-upload-section {
-    flex: 2;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-right: 2px solid #ccc;
-    padding: 20px;
-    height: 95%;
-  }
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-right: 2px solid #ccc;
+  padding: 20px;
+  height: 95%;
+}
   
-  .video-upload-section h2 {
-    margin-bottom: 20px;
-    font-size: 1.5em;
-    color: #333;
-  }
+.video-upload-section h2 {
+  margin-bottom: 20px;
+  font-size: 1.5em;
+  color: #333;
+}
   
-  input[type="file"] {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-  }
+input[type="file"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
   
-  video {
-    margin-top: 20px;
-    max-width: 95%;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
+video {
+  margin-top: 20px;
+  max-width: 95%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

@@ -14,8 +14,3 @@ h1 {
   font-size: 2em;
   color: #333;
 }
-
-.content-container {
-  display: flex;
-  flex: 1;
-}

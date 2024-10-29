@@ -1,22 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './CSS/ChatInterface.css';
 
-const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUploaded }) => {
+const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUploaded, seekToTime }) => {
   const [messages] = useState([
     { 
-      text: "The parent uses a positive teaching strategy by asking open-ended questions.", 
-      sender: 'bot', 
-      timestamp: 10
-    },
-    { 
-      text: "The parent did not engage the child when they lost attention. This is negative feedback.", 
+      text: "You're effectively following the intervention flowchart steps by establishing joint attention, presenting your strategy, and waiting for at least 3 seconds.", 
       sender: 'bot', 
       timestamp: 25
     },
     { 
-      text: "The parent uses positive reinforcement when the child responds correctly.", 
+      text: "Pay closer attention to non-verbal cues, such as signing or gestures, especially when your child is engaged in activities that may make verbal communication difficult, like being inside a tunnel.", 
       sender: 'bot', 
-      timestamp: 35
+      timestamp: 31
     }
   ]);
 
@@ -89,6 +84,12 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
     }
   }, [allMessages]);
 
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${minutes}:${secs}`;
+  };
+
   return (
     <div className="chat-section">
       <h2>AI Assistant</h2>
@@ -97,8 +98,12 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
           <div key={index} className={`chat-message ${msg.sender}`}>
             {msg.sender === 'bot' && msg.timestamp && (
               <span className="message-timestamp">
-                [ {new Date(msg.timestamp * 1000).toISOString().substr(14, 5)} ]
-              </span>
+              [ 
+              <button onClick={() => seekToTime(msg.timestamp)}>
+                {formatTime(msg.timestamp)}
+              </button> 
+              ]
+            </span>
             )}
             <span className="message-text"> {msg.text}</span>
           </div>
@@ -116,7 +121,7 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
             }
           }}
         />
-        <button onClick={sendMessage}>Send</button>
+        <button className="send-button" onClick={sendMessage}>Send</button>
       </div>
     </div>
   );

@@ -2,26 +2,32 @@ import React, { useState, useEffect, useRef } from 'react';
 import './CSS/VideoUpload.css';
 import ChatInterface from './ChatInterface';
 
-const VideoUpload = () => {
+const VideoUpload = ({ onVideoTimeUpdate }) => {
   const [video, setVideo] = useState(null);
-  const [videoTime, setVideoTime] = useState(0);
   const [videoId, setVideoId] = useState(null);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
   const videoRef = useRef(null);
+
+  const seekToTime = (time) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+      videoRef.current.play();
+    }
+  };
 
   const handleVideoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       setVideo(URL.createObjectURL(file));
       setVideoId(Date.now());
-      setVideoTime(0);
       setNewVideoUploaded(true);
     }
   };
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      setVideoTime(videoRef.current.currentTime);
+      const currentTime = videoRef.current.currentTime;
+      onVideoTimeUpdate(currentTime);
     }
   };
 
@@ -34,7 +40,7 @@ const VideoUpload = () => {
 
   return (
     <div className="video-chat-container">
-      <div className="video-upload-section">
+      <div className={`video-upload-section ${video ? 'uploaded' : ''}`}>
         <h2>Upload Video</h2>
         <input type="file" accept="video/*" onChange={handleVideoUpload} />
         {video && (
@@ -43,7 +49,14 @@ const VideoUpload = () => {
           </video>
         )}
       </div>
-      <ChatInterface videoTime={videoTime} videoId={videoId} newVideoUploaded={newVideoUploaded} setNewVideoUploaded={setNewVideoUploaded} />
+
+      <ChatInterface
+        videoTime={videoRef.current ? videoRef.current.currentTime : 0}
+        videoId={videoId}
+        newVideoUploaded={newVideoUploaded}
+        setNewVideoUploaded={setNewVideoUploaded}
+        seekToTime={seekToTime}
+      />
     </div>
   );
 };

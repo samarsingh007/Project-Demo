@@ -1,6 +1,6 @@
 .chat-section {
   flex: 1;
-  padding: 20px;
+  padding: 20px 20px 20px 0;
   max-width: 30%;
 }
 
@@ -15,7 +15,7 @@
   height: 65vh;
   overflow-y: auto;
   border: 1px solid #ccc;
-  border-radius: 10px;;
+  border-radius: 10px;
   padding: 10px;
   margin-bottom: 10px;
   display: flex;
@@ -48,6 +48,19 @@
   color: #0079fa;
 }
 
+.message-timestamp button {
+  color: #0079fa;
+  background: none;
+  border: none;
+  padding: 0 2px 0 2px;
+  cursor: pointer;
+}
+
+.message-timestamp button:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
 .input-container {
   display: flex;
   align-items: center;
@@ -61,7 +74,7 @@ input[type="text"] {
   margin-right: 10px;
 }
 
-button {
+.send-button {
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
@@ -70,6 +83,6 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+.send-button:hover {
   background-color: #0056b3;
 }

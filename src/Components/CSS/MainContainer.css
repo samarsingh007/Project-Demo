@@ -1,0 +1,25 @@
+.content-container {
+  display: flex;
+  align-items: stretch;
+  border: 2px solid #ccc;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.left-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.divider {
+  width: 3px;
+  cursor: ew-resize;
+  background-color: #ccc;
+  transition: background-color 0.3s;
+}
+
+.divider:hover {
+  background-color: #999;
+}

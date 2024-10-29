@@ -1,7 +1,6 @@
 import React from 'react';
 import './App.css';
-import VideoUpload from './Components/VideoUpload';
-
+import MainContainer from './Components/MainContainer';
 
 function App() {
   return (
@@ -9,8 +8,8 @@ function App() {
       <header>
         <h1>Parent-AI Partnership</h1>
       </header>
-        <VideoUpload />
-      </div>
+      <MainContainer />
+    </div>
   );
 }
 

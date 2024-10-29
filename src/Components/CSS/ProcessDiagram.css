@@ -1,0 +1,55 @@
+.process-diagram-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.process-illustration-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.process-diagram {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.pulsating-circle {
+  position: absolute;
+  width: 35%; 
+  height: 12%;
+  border-radius: 10px;
+  background-color: transparent;
+  transform: translate(-50%, -50%);
+  animation: pulse-border 1s infinite;
+  pointer-events: none;
+}
+
+.pulsating-circle.correct {
+  border: 3px solid rgb(16, 164, 0); /* Green border */
+}
+
+.pulsating-circle.error {
+  border: 3px solid rgb(255, 0, 0); /* Red border */
+}
+@keyframes pulse-border {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}

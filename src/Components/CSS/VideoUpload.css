@@ -8,9 +8,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-right: 2px solid #ccc;
   padding: 20px;
-  height: 95%;
+}
+
+.video-upload-section.uploaded {
+  justify-content: flex-start; 
 }
   
 .video-upload-section h2 {
@@ -28,7 +30,6 @@ input[type="file"] {
   
 video {
   margin-top: 20px;
-  max-width: 95%;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }

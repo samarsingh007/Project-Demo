@@ -4,6 +4,7 @@
   border: 2px solid #ccc;
   border-radius: 20px;
   overflow: hidden;
+  min-height: 86vh;
 }
 
 .left-container {
@@ -22,4 +23,28 @@
 
 .divider:hover {
   background-color: #999;
+}
+
+.right-container {
+  display: flex;
+  align-items: flex-start;
+}
+
+.video-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-details {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.chat-section{
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: 35%;
 }

@@ -1,14 +1,10 @@
-.video-chat-container {
-  display: flex;
-}
-
 .video-upload-section {
   flex: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 20px 20px 0 20px;
 }
 
 .video-upload-section.uploaded {

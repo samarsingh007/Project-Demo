@@ -33,11 +33,11 @@
 }
 
 .pulsating-circle.correct {
-  border: 3px solid rgb(16, 164, 0); /* Green border */
+  border: 3px solid rgb(16, 164, 0);
 }
 
 .pulsating-circle.error {
-  border: 3px solid rgb(255, 0, 0); /* Red border */
+  border: 3px solid rgb(255, 0, 0);
 }
 @keyframes pulse-border {
   0% {

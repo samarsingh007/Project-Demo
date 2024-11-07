@@ -44,6 +44,7 @@
 
 .message-timestamp {
   color: #0079fa;
+  margin-right: 5px;
 }
 
 .message-timestamp button {
@@ -56,6 +57,18 @@
 
 .message-timestamp button:hover {
   color: #0056b3;
+  text-decoration: underline;
+}
+
+.toggle-expand-btn {
+  color: #007bff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggle-expand-btn:hover {
   text-decoration: underline;
 }
 

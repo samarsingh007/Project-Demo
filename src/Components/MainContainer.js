@@ -9,13 +9,10 @@ import './CSS/MainContainer.css';
 const MainContainer = () => {
   const [leftWidth, setLeftWidth] = useState(30);
   const [videoTime, setVideoTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
   const [videoId, setVideoId] = useState(null);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
-  const [fidelityScore, setFidelityScore] = useState(null);
-
-  const handleFidelityScoreUpdate = (score) => {
-    setFidelityScore(score);
-  };
+  const [messages, setMessages] = useState([]);
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -29,14 +26,19 @@ const MainContainer = () => {
       setLeftWidth(newWidth);
     }
   };
+  
+  const handleMessagesUpdate = (newMessages) => {
+    setMessages(newMessages);
+  };
 
   const handleMouseUp = () => {
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
   };
 
-  const handleVideoTimeUpdate = (time) => {
+  const handleVideoTimeUpdate = (time, duration) => {
     setVideoTime(time);
+    setVideoDuration(duration);
   };
 
   return (
@@ -55,22 +57,22 @@ const MainContainer = () => {
             setNewVideoUploaded={setNewVideoUploaded} 
           />
           <div className="video-details">
-            <TranscriptionWindow videoTime={videoTime} className="transcription-window" />
-            <FidelityScore score={fidelityScore} className="fidelity-score" />
+            <TranscriptionWindow videoTime={videoTime} />
+            <FidelityScore messages={messages} videoDuration={videoDuration} currentTime={videoTime}/>
           </div>
         </div>
         <div className='chat-section'>
-        <ChatInterface 
-          videoTime={videoTime} 
-          videoId={videoId} 
-          newVideoUploaded={newVideoUploaded} 
-          setNewVideoUploaded={setNewVideoUploaded} 
-          seekToTime={(time) => {
-            document.querySelector("video").currentTime = time; 
-          }}
-          onFidelityScoreUpdate={handleFidelityScoreUpdate} // Pass fidelity score update function
-        />
-      </div>
+          <ChatInterface 
+            videoTime={videoTime} 
+            videoId={videoId} 
+            newVideoUploaded={newVideoUploaded} 
+            setNewVideoUploaded={setNewVideoUploaded}
+            onMessagesUpdate={handleMessagesUpdate}  
+            seekToTime={(time) => {
+              document.querySelector("video").currentTime = time; 
+            }}
+          />
+        </div>
       </div>
     </div>
   );

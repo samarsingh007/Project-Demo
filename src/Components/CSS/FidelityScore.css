@@ -1,35 +1,90 @@
 .fidelity-score-container {
-  text-align: center;
+  position: relative;
+  width: 100%;
 }
 
 .fidelity-score-container h2 {
-  font-size: 1.5em;
-  color: #333;
-  margin-bottom: 10px;
+  text-align: center;
 }
 
-.score-bar {
+.fidelity-score-bar {
   position: relative;
-  width: 100%;
+  display: flex;
   height: 30px;
-  background: linear-gradient(to right, #dc3545, #ffc107 , #28a745);
-  border-radius: 10px;
-  margin: 20px 0;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 20px;
 }
 
-.score-circle {
+.fidelity-segment {
+  height: 100%;
   position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  background-color: #333;
-  color: #fff;
-  font-weight: bold;
-  font-size: 1em;
-  border-radius: 50%;
+}
+
+.fidelity-score-1 {
+  background-color: rgb(202, 3, 3);
+}
+
+.fidelity-score-2 {
+  background-color: orange;
+}
+
+.fidelity-score-3 {
+  background-color: rgb(255, 234, 0);
+}
+
+.fidelity-score-4, .fidelity-score-green {
+  background-color: #008b20;
+}
+
+.video-cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #000;
+  transition: left 0.1s linear;
+  z-index: 2;
+}
+
+.scale-marker {
+  position: absolute;
+  top: 100px;
+  transform: translateX(-50%);
+  text-align: center;
+  margin-left: 4px;
+}
+
+.scale-line {
+  width: 1px;
+  height: 10px;
+  background-color: #000;
+  margin: 0 auto;
+}
+
+.scale-time {
+  font-size: 12px;
+  display: block;
+  margin-top: 2px;
+}
+
+.fidelity-key {
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.key-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: left 0.3s ease;
+  margin-bottom: 5px;
+}
+
+.key-color {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  border-radius: 3px;
 }

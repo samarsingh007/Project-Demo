@@ -18,8 +18,8 @@
   background-color: #f9f9f9;
   padding: 10px 0;
   margin: 0;
-  box-shadow: 0px 10px 8px -8px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
-  backdrop-filter: blur(5px); /* Subtle blur effect */
+  box-shadow: 0px 10px 8px -8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
   opacity: 0.9;
 }
 
@@ -51,7 +51,6 @@
   background-color: #8b8b8b;
 }
 
-/* Modal styles */
 .modal-overlay {
   position: fixed;
   top: 0;

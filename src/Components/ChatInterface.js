@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './CSS/ChatInterface.css';
 
-const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUploaded, seekToTime, onFidelityScoreUpdate}) => {
+const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUploaded, seekToTime, onMessagesUpdate}) => {
   const [messages] = useState([
     { 
       text: "Pay closer attention to non-verbal cues, such as signing or gestures, especially when your child is engaged in activities that may make verbal communication difficult, like being inside a tunnel.", 
@@ -44,12 +44,6 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
       sender: 'bot', 
       timestamp: 216, 
       fidelityScore: 4
-    },
-    { 
-      text: "When you asked 'What's that?' while pointing to a picture on the right and Aria responded with 'car' (referring to something on the left). You acknowledged her response was appropriate. However, since this was not the correct answer for the object you were pointing to, the next step should be to gently redirect back to the original question.\n\nAs per the flowchart strategy, you can acknowledge her incorrect response (e.g., 'Yes, that's a car'), but then repeat the original question: 'What's that?' while pointing to the correct object again. This keeps the interaction focused and provides her another opportunity to answer correctly. If she still does not respond or gives another incorrect answer, the next step would be to model the correct response for her. This approach reinforces the flowchart's steps while still validating her engagement, helping her stay on track without discouraging her attempts to participate.", 
-      sender: 'bot', 
-      timestamp: 393, 
-      fidelityScore: 3
     }
   ]);  
 
@@ -57,6 +51,7 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
   const [allMessages, setAllMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const chatBoxRef = useRef(null);
+  const [expandedMessages, setExpandedMessages] = useState({});
 
   const sendMessage = () => {
     if (currentMessage.trim() !== '') {
@@ -85,15 +80,17 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
     setAllMessages([initialMessage]);
   }, []);
 
+  useEffect(() => {
+    onMessagesUpdate(messages);
+  }, [messages, onMessagesUpdate]);
+
 useEffect(() => {
   const currentDisplayedMessages = displayedMessages[videoId] || [];
   
-  // Filter messages that should be displayed based on the current video time
   const relevantMessages = messages.filter(
     (msg) => msg.timestamp <= videoTime
   );
 
-  // Identify new messages to add to display
   const newMessages = relevantMessages.filter(
     (msg) => !currentDisplayedMessages.includes(msg)
   );
@@ -106,15 +103,7 @@ useEffect(() => {
 
     setAllMessages((prevMessages) => [...prevMessages, ...newMessages]);
   }
-
-  // Update fidelity score based on the most recent message with a score within the current time range
-  const latestMessageWithScore = relevantMessages.reverse().find((msg) => msg.fidelityScore);
-  if (latestMessageWithScore) {
-    onFidelityScoreUpdate(latestMessageWithScore.fidelityScore);
-  } else {
-    onFidelityScoreUpdate(null); // Reset score if no message in the time range has a fidelity score
-  }
-}, [videoTime, messages, videoId, displayedMessages, onFidelityScoreUpdate]);
+}, [videoTime, messages, videoId, displayedMessages]);
 
 
 
@@ -143,6 +132,13 @@ useEffect(() => {
     return `${minutes}:${secs}`;
   };
 
+  const toggleExpandMessage = (index) => {
+    setExpandedMessages((prev) => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
   return (
     <div className="chat-interface">
       <h2>AI Assistant</h2>
@@ -151,14 +147,28 @@ useEffect(() => {
           <div key={index} className={`chat-message ${msg.sender}`}>
             {msg.sender === 'bot' && msg.timestamp && (
               <span className="message-timestamp">
-              [ 
-              <button onClick={() => seekToTime(msg.timestamp)}>
-                {formatTime(msg.timestamp)}
-              </button> 
-              ]
-            </span>
+                [ 
+                <button onClick={() => seekToTime(msg.timestamp)}>
+                  {formatTime(msg.timestamp)}
+                </button> 
+                ]
+              </span>
             )}
-            <span className="message-text"> {msg.text}</span>
+            <span className="message-text">
+              {msg.text.length > 200 && !expandedMessages[index] ? (
+                <>
+                  {msg.text.substring(0, 200)}...{' '}
+                  <button className="toggle-expand-btn" onClick={() => toggleExpandMessage(index)}>Show More</button>
+                </>
+              ) : msg.text.length > 200 && expandedMessages[index] ? (
+                <>
+                  {msg.text}{' '}
+                  <button className="toggle-expand-btn" onClick={() => toggleExpandMessage(index)}>Show Less</button>
+                </>
+              ) : (
+                msg.text
+              )}
+            </span>
           </div>
         ))}
       </div>

@@ -17,7 +17,8 @@ const VideoUpload = ({ onVideoTimeUpdate, setVideoId, setNewVideoUploaded }) => 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       const currentTime = videoRef.current.currentTime;
-      onVideoTimeUpdate(currentTime);
+      const duration = videoRef.current.duration;
+      onVideoTimeUpdate(currentTime, duration);
     }
   };
 

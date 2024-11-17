@@ -4,14 +4,12 @@
   border: 2px solid #ccc;
   border-radius: 20px;
   overflow: hidden;
-  min-height: 86vh;
+  min-height: 84vh;
 }
 
-.left-container {
+.left-container, .right-container {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .divider {
@@ -23,11 +21,6 @@
 
 .divider:hover {
   background-color: #999;
-}
-
-.right-container {
-  display: flex;
-  align-items: flex-start;
 }
 
 .video-section {
@@ -48,4 +41,5 @@
   flex-direction: column;
   flex: 1;
   max-width: 50%;
+  height: 100%;
 }

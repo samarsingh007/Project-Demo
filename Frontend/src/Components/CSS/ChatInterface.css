@@ -10,7 +10,7 @@
 }
 
 .chat-box {
-  height: 67vh;
+  height: 63vh;
   overflow-y: auto;
   border: 1px solid #ccc;
   border-radius: 10px;

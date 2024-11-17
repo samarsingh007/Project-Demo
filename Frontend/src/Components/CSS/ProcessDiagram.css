@@ -1,8 +1,15 @@
 .process-diagram-container {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   padding: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+.process-diagram-container.uploaded {
+  justify-content: flex-start;
 }
 
 .process-illustration-container {

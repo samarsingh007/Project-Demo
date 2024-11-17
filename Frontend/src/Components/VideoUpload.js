@@ -5,12 +5,23 @@ const VideoUpload = ({ onVideoTimeUpdate, setVideoId, setNewVideoUploaded }) => 
   const [video, setVideo] = useState(null);
   const videoRef = useRef(null);
 
-  const handleVideoUpload = (event) => {
+  const handleVideoUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setVideo(URL.createObjectURL(file));
-      setVideoId(Date.now());
-      setNewVideoUploaded(true);
+      const formData = new FormData();
+      formData.append('video', file);
+  
+      const response = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+  
+      if (data.success) {
+        setVideo(data.videoUrl);
+        setVideoId(data.videoId);
+        setNewVideoUploaded(true);
+      }
     }
   };
 

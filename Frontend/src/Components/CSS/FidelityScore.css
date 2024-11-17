@@ -7,6 +7,24 @@
   text-align: center;
 }
 
+.strategy-dropdown {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.strategy-dropdown label {
+  margin-right: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.strategy-dropdown select {
+  padding: 5px;
+  font-size: 14px;
+}
+
 .fidelity-score-bar {
   position: relative;
   display: flex;
@@ -14,7 +32,6 @@
   background-color: #e0e0e0;
   border-radius: 5px;
   overflow: hidden;
-  margin-bottom: 20px;
 }
 
 .fidelity-segment {
@@ -50,7 +67,6 @@
 
 .scale-marker {
   position: absolute;
-  top: 100px;
   transform: translateX(-50%);
   text-align: center;
   margin-left: 4px;
@@ -70,7 +86,7 @@
 }
 
 .fidelity-key {
-  margin-top: 40px;
+  margin-top: 50px;
   display: flex;
   justify-content: space-between;
 }

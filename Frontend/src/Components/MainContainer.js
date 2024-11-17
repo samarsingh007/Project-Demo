@@ -22,7 +22,7 @@ const MainContainer = () => {
 
   const handleMouseMove = (e) => {
     const newWidth = (e.clientX / window.innerWidth) * 100;
-    if (newWidth > 20 && newWidth < 60) {
+    if (newWidth > 20 && newWidth < 45) {
       setLeftWidth(newWidth);
     }
   };

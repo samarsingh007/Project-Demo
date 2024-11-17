@@ -1,20 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './CSS/FidelityScore.css';
 
 const FidelityScore = ({ messages, videoDuration, currentTime }) => {
+  const [selectedStrategy, setSelectedStrategy] = useState("Modeling");
+
+  const filteredMessages = messages.filter(
+    (message) => message.strategy === selectedStrategy
+  );
+
   const segments = [];
 
-  if (messages.length > 0 && messages[0].timestamp > 0) {
+  if (filteredMessages.length > 0 && filteredMessages[0].timestamp > 0) {
     segments.push({
       score: 'green',
       startPercentage: 0,
-      widthPercentage: videoDuration ? (messages[0].timestamp / videoDuration) * 100 : 0,
+      widthPercentage: videoDuration ? (filteredMessages[0].timestamp / videoDuration) * 100 : 0,
     });
   }
 
-  messages.forEach((message, index) => {
+  filteredMessages.forEach((message, index) => {
     const start = message.timestamp;
-    const end = index === messages.length - 1 ? videoDuration : messages[index + 1].timestamp;
+    const end = index === filteredMessages.length - 1 ? videoDuration : filteredMessages[index + 1].timestamp;
     const startPercentage = videoDuration ? (start / videoDuration) * 100 : 0;
     const widthPercentage = videoDuration ? ((end - start) / videoDuration) * 100 : 0;
 
@@ -37,6 +43,14 @@ const FidelityScore = ({ messages, videoDuration, currentTime }) => {
   return (
     <div className="fidelity-score-container">
       <h2>Fidelity Score</h2>
+      <div className="strategy-dropdown">
+        <label>Choose Strategy:</label>
+        <select onChange={(e) => setSelectedStrategy(e.target.value)} value={selectedStrategy}>
+          <option value="Modeling">Modeling</option>
+          <option value="Mand-Modeling">Mand-Modeling</option>
+          <option value="Time Delay">Time Delay</option>
+        </select>
+      </div>
       <div className="fidelity-score-bar">
         {segments.map((segment, index) => (
           <div

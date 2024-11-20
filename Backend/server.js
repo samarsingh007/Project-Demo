@@ -5,6 +5,15 @@ const app = express();
 const PORT = 5000;
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
+app.use(cors({ origin: 'http://localhost:3000' }));
+
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.get('/', (req, res) => {
+  res.send('Backend is working!');
+});
 
 const upload = multer({
   dest: 'uploads/',
@@ -77,12 +86,167 @@ const messages = [
     }
 ];
 
-app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.get('/', (req, res) => {
-  res.send('Backend is working!');
+const chatMessages = {
+  introduction: [
+    {
+    text: "Hi [Parent’s Name]! Let’s review your latest session with [Child’s Name]. I’m here to help you reflect on what went well, provide feedback, and work on any areas where you’d like more support. Ready to start?",
+    sender: "bot",
+    }
+  ],
+  selfReflection: [
+    {
+      text: "First, let’s take a moment to reflect on today’s interaction. I have a couple of questions for you.",
+      sender: "bot",
+    },
+    {
+      text: "What do you think went well during your time with [Child’s Name]?",
+      sender: "bot",
+      awaitResponse: true
+    },
+    {
+      text: "Thank you for sharing! Now, thinking back, what do you think you could have done differently?",
+      sender: "bot",
+      awaitResponse: true
+    },
+    {
+      text: "Great reflections! It’s so helpful to consider both the strengths and areas to adjust. Now let’s look at some specific feedback.",
+      sender: "bot"
+    }
+  ],
+  fidelityScore: {
+    0: [
+      {
+      text: "I’ve reviewed the video from your recent session with [Child’s Name]. Let’s go over some highlights based on your fidelity score, covering what went well and where we can make some adjustments for next time",
+      sender: "bot"
+      }
+    ],
+    4: [
+      {
+        text: "Great job! You received a high fidelity score of 4, meaning you implemented several key steps effectively. Here’s a breakdown of what went well:",
+        sender: "bot"
+      },
+      {
+        text: "What did you do well? [Specific positive feedback on a well-executed action, such as engaging in joint attention or giving appropriate wait time].",
+        sender: "bot"
+      },
+      {
+        text: "Which steps were implemented correctly? [Description of correctly implemented steps, like following the planned strategy sequence without rushing].",
+        sender: "bot"
+      },
+      {
+        text: "Why did you receive the high fidelity score? [Explanation of scoring, e.g., ‘You allowed [Child’s Name] adequate response time and acknowledged their actions].",
+        sender: "bot"
+      },
+      {
+        text: "Fantastic work! These positive practices make a big difference. Keep it up, and let’s build on this success.",
+        sender: "bot"
+      }
+    ],
+    3: [
+      {
+        text: "You received a fidelity score of 3 in the following cases, which suggests some good attempts and a few areas where we can work together to improve.",
+        sender: "bot"
+      },
+      {
+        text: "Here are the time stamps for reference: Case 1: 1:30-1:43; Case 2: 1:48-2:03.",
+        sender: "bot"
+      },
+      {
+        text: "Case 1: 1:30-1:43\nYou did a great job verbally modeling the word 'car' while [Child’s Name] was looking at the picture of the toy car. This helps reinforce language while [Child’s Name] is focused and attentive.",
+        sender: "bot"
+      },
+      {
+        text: "However, you missed acknowledging his correct response when he vocalized 'caa' for 'car.' Next time, let’s try to acknowledge his responses right away to encourage and validate his efforts.",
+        sender: "bot"
+      }
+    ],
+    2: [
+      {
+        text: "You received a fidelity score of 2 in the following instances, showing some effective strategies with room to refine your approach.",
+        sender: "bot"
+      },
+      {
+        text: "Here are the time stamps for reference: Case 1: 0:45-1:00; Case 2: 1:20-1:35.",
+        sender: "bot"
+      },
+      {
+        text: "Case 1: 0:45-1:00\nYou used a choice question effectively, asking, 'Is this a car or a train?' This was a great strategy since [Child’s Name] was paying attention to the car, and choice questions help reinforce his focus and language development.",
+        sender: "bot"
+      },
+      {
+        text: "However, you waited only a second before asking the question again. To give [Child’s Name] a chance to process and respond, try waiting 3-5 seconds before repeating. This will help him feel more confident in his ability to respond.",
+        sender: "bot"
+      }
+    ],
+    1: [
+      {
+        text: "You received a fidelity score of 1 in the following instances, which suggests we can work on adjusting some strategies for better engagement.",
+        sender: "bot"
+      },
+      {
+        text: "Case 1: 0:10-0:25\nYou modeled a vocabulary word, but [Child’s Name] was looking away, so there was no joint attention. To make sure [Child’s Name] is fully engaged, try to first notice where he’s looking and whether he’s interested in the activity or object.",
+        sender: "bot"
+      },
+      {
+        text: "Before introducing the word, pause and wait for [Child’s Name] to look at the toy or object. This will help him connect with what you’re modeling and stay focused.",
+        sender: "bot"
+      }
+    ],
+  },
+    problemSolvingDialogue: [
+      {
+        text: "I know strategy implementation can sometimes raise questions or concerns. Let’s work through anything on your mind.",
+        sender: "bot",
+        awaitResponse: true
+      },
+      {
+        text: "What other questions do you have about implementing strategies?",
+        sender: "bot",
+        awaitResponse: true
+      },
+      {
+        text: "Thank you for sharing! Is there any specific concern or challenge you’d like to talk about?",
+        sender: "bot",
+        awaitResponse: true
+      },
+      {
+        text: "Thanks for bringing that up. Here are some suggestions that might help. [Provide targeted advice or resources based on the parent’s specific concerns]",
+        sender: "bot",
+      },
+    ],
+    jointPlanning: [
+      {
+        text: "Let’s make a plan together for next time! I’ll focus on areas where we can keep improving and building on what’s going well.",
+        sender: "bot",
+      },
+      {
+        text: "For example, if wait time is a challenge, here’s an idea: after presenting the strategy, count to five in your head before repeating it.",
+        sender: "bot",
+      },
+      {
+        text: "Remember, I’m here to help you every step of the way. If anything new comes up, you can always reach out!",
+        sender: "bot",
+      },
+    ],
+};
+
+app.get('/api/chat/:context', (req, res) => {
+  const { context } = req.params;
+  const { videoTime, fidelityScore } = req.query;
+
+  let response = [];
+  if (context === 'fidelity') {
+    if (fidelityScore) {
+      response = chatMessages.fidelityScore[fidelityScore] || [];
+    } else {
+      response = messages.filter((msg) => msg.timestamp <= parseFloat(videoTime));
+    }
+  } else if (chatMessages[context]) {
+    response = chatMessages[context];
+  }
+
+  res.json(response);
 });
 
 app.post('/upload', upload.single('video'), (req, res) => {
@@ -104,16 +268,6 @@ app.get('/api/transcriptions', (req, res) => {
   
     res.json(filteredTranscriptions);
   });  
-  
-app.get('/api/messages', (req, res) => {
-  const videoTime = parseFloat(req.query.videoTime);
-
-  const filteredMessages = messages.filter(
-    (message) => message.timestamp <= videoTime
-  );
-
-  res.json(filteredMessages);
-});
 
 app.post('/api/upload-image', upload.single('image'), (req, res) => {
   if (!req.file) {

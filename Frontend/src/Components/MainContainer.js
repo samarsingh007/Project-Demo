@@ -10,7 +10,6 @@ const MainContainer = () => {
   const [leftWidth, setLeftWidth] = useState(30);
   const [videoTime, setVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
-  const [videoId, setVideoId] = useState(null);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
   const [messages, setMessages] = useState([]);
 
@@ -53,7 +52,6 @@ const MainContainer = () => {
         <div className="video-section">
           <VideoUpload 
             onVideoTimeUpdate={handleVideoTimeUpdate} 
-            setVideoId={setVideoId} 
             setNewVideoUploaded={setNewVideoUploaded} 
           />
           <div className="video-details">
@@ -64,7 +62,7 @@ const MainContainer = () => {
         <div className='chat-section'>
           <ChatInterface 
             videoTime={videoTime} 
-            videoId={videoId} 
+            videoDuration={videoDuration}
             newVideoUploaded={newVideoUploaded} 
             setNewVideoUploaded={setNewVideoUploaded}
             onMessagesUpdate={handleMessagesUpdate}  

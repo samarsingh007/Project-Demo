@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './CSS/ChatInterface.css';
 
-const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUploaded, seekToTime, onMessagesUpdate }) => {
+const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideoUploaded, seekToTime, onMessagesUpdate }) => {
   const [messages, setMessages] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
-  const chatBoxRef = useRef(null);
   const [expandedMessages, setExpandedMessages] = useState({});
+  const [context, setContext] = useState();
+  const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
+  const [messageQueue, setMessageQueue] = useState([]);
+  const processedMessages = useRef(new Set());
+  const chatBoxRef = useRef(null);
 
   const fetchMessages = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/messages?videoTime=${videoTime}`);
+      const response = await fetch(
+        `http://localhost:5000/api/chat/${context}?videoTime=${videoTime || 0}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch messages');
       }
@@ -19,7 +25,7 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  }, [videoTime]);
+  }, [context, videoTime]);
 
   useEffect(() => {
     fetchMessages();
@@ -27,15 +33,30 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
 
   useEffect(() => {
     if (messages.length > 0) {
-      setAllMessages((prevMessages) => {
-        const newMessages = messages.filter(
-          (msg) => !prevMessages.some((existing) => existing.text === msg.text && existing.timestamp === msg.timestamp)
-        );
-        return [...prevMessages, ...newMessages];
+      const newMessages = messages.filter(
+        (msg) => !processedMessages.current.has(msg.text + msg.timestamp)
+      );
+
+      newMessages.forEach((msg) => {
+        processedMessages.current.add(msg.text + msg.timestamp);
       });
-      onMessagesUpdate(messages);
+
+      setMessageQueue((prevQueue) => [...prevQueue, ...newMessages]);
     }
-  }, [messages, onMessagesUpdate]);
+  }, [messages]);
+
+  useEffect(() => {
+    if (!isAwaitingResponse && messageQueue.length > 0) {
+      const nextMessage = messageQueue[0];
+      setAllMessages((prevMessages) => [...prevMessages, nextMessage]);
+
+      if (nextMessage.awaitResponse) {
+        setIsAwaitingResponse(true);
+      }
+
+      setMessageQueue((prevQueue) => prevQueue.slice(1));
+    }
+  }, [messageQueue, isAwaitingResponse]);
 
   useEffect(() => {
     if (newVideoUploaded) {
@@ -43,8 +64,14 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
         text: "A new video has been successfully uploaded.",
         sender: 'bot',
       };
-      setAllMessages((prevMessages) => [...prevMessages, videoUploadMessage]);
+
+      if (!processedMessages.current.has(videoUploadMessage.text)) {
+        processedMessages.current.add(videoUploadMessage.text);
+        setAllMessages((prevMessages) => [...prevMessages, videoUploadMessage]);
+      }
+
       setNewVideoUploaded(false);
+      setContext('introduction');
     }
   }, [newVideoUploaded, setNewVideoUploaded]);
 
@@ -53,8 +80,24 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
       text: "Hi, I'm a conversational assistant designed to help.",
       sender: 'bot',
     };
-    setAllMessages([initialMessage]);
+
+    if (!processedMessages.current.has(initialMessage.text)) {
+      processedMessages.current.add(initialMessage.text);
+      setAllMessages([initialMessage]);
+    }
   }, []);
+
+  useEffect(() => {
+    if (context === 'introduction') {
+      setContext('selfReflection');
+    } else if (context === 'selfReflection' && videoTime > 0) {
+      setContext('fidelity');
+    } else if (context === 'fidelity' && videoTime >= videoDuration - 1) {
+      setContext('problemSolvingDialogue');
+    } else if (context === 'problemSolvingDialogue' && videoTime >= videoDuration) {
+      setContext('jointPlanning');
+    }
+  }, [context, videoTime, newVideoUploaded, videoDuration]);
 
   useEffect(() => {
     if (chatBoxRef.current) {
@@ -68,8 +111,12 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
         text: currentMessage,
         sender: 'user',
       };
+
       setAllMessages((prevMessages) => [...prevMessages, userMessage]);
       setCurrentMessage('');
+      if (isAwaitingResponse) {
+        setIsAwaitingResponse(false);
+      }
     }
   };
 
@@ -102,14 +149,14 @@ const ChatInterface = ({ videoTime, videoId, newVideoUploaded, setNewVideoUpload
               </span>
             )}
             <span className="message-text">
-              {msg.text.length > 200 && !expandedMessages[index] ? (
+              {msg.text.length > 210 && !expandedMessages[index] ? (
                 <>
-                  {msg.text.substring(0, 200)}...{' '}
+                  {msg.text.substring(0, 210)}...{' '}
                   <button className="toggle-expand-btn" onClick={() => toggleExpandMessage(index)}>
                     Show More
                   </button>
                 </>
-              ) : msg.text.length > 200 && expandedMessages[index] ? (
+              ) : msg.text.length > 210 && expandedMessages[index] ? (
                 <>
                   {msg.text}{' '}
                   <button className="toggle-expand-btn" onClick={() => toggleExpandMessage(index)}>

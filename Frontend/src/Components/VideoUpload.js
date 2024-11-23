@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './CSS/VideoUpload.css';
 
-const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded }) => {
+const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded, setVideoId }) => {
   const [video, setVideo] = useState(null);
   const videoRef = useRef(null);
 
@@ -20,6 +20,7 @@ const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded }) => {
       if (data.success) {
         setVideo(data.videoUrl);
         setNewVideoUploaded(true);
+        setVideoId(data.videoId);
       }
     }
   };

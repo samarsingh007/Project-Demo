@@ -104,6 +104,12 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [allMessages]);
+  
+  useEffect(() => {
+    if (onMessagesUpdate) {
+      onMessagesUpdate(allMessages);
+    }
+  }, [allMessages, onMessagesUpdate]);
 
   const sendMessage = () => {
     if (currentMessage.trim() !== '') {

@@ -12,6 +12,7 @@ const MainContainer = () => {
   const [videoDuration, setVideoDuration] = useState(0);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [videoId, setVideoId] = useState(null);
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -53,9 +54,10 @@ const MainContainer = () => {
           <VideoUpload 
             onVideoTimeUpdate={handleVideoTimeUpdate} 
             setNewVideoUploaded={setNewVideoUploaded} 
+            setVideoId={setVideoId}
           />
           <div className="video-details">
-            <TranscriptionWindow videoTime={videoTime} />
+            <TranscriptionWindow videoId={videoId} videoTime={videoTime} />
             <FidelityScore messages={messages} videoDuration={videoDuration} currentTime={videoTime}/>
           </div>
         </div>

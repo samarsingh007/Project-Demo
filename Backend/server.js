@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const axios = require('axios');
 const FormData = require('form-data');
+const { spawn } = require('child_process');
 
 
 app.use(cors({ origin: 'http://localhost:3000' }));
@@ -222,6 +223,60 @@ const chatMessages = {
     ],
 };
 
+app.get('/generate-dag', (req, res) => {
+  const dag = `
+  digraph G {
+      rankdir=TB; // Top to Bottom layout
+
+      // Default node style with fixed size
+      node [shape=box style="rounded,filled" fontsize=12 fontname="Helvetica, Arial, sans-serif" width=2 height=0.8 fixedsize=true];
+
+      // Nodes with specific colors and wrapped labels
+      "Establish Joint Attention" [fillcolor=lightgrey label="Establish\\nJoint Attention"];
+      "Present Strategy" [fillcolor=lightgrey label="Present\\nStrategy"];
+      "Wait for Response" [fillcolor=lightgrey label="Wait for\\nResponse"];
+      "Correct Response" [fillcolor=lightgreen label="Correct\\nResponse"];
+      "Acknowledge and Praise" [fillcolor=lightgrey label="Acknowledge\\nand Praise"];
+      "Repeat Strategy" [fillcolor=lightgrey label="Repeat\\nStrategy"];
+      "Move On" [fillcolor=lightgrey label="Move On"];
+      "No Response or Incorrect Response" [fillcolor=lightcoral label="No Response\\nor Incorrect\\nResponse"];
+
+      // Edges
+      "Establish Joint Attention" -> "Present Strategy";
+      "Present Strategy" -> "Wait for Response";
+      "Wait for Response" -> "Correct Response";
+      "Wait for Response" -> "No Response or Incorrect Response";
+      "No Response or Incorrect Response" -> "Repeat Strategy";
+      "Repeat Strategy" -> "Move On";
+      "Correct Response" -> "Acknowledge and Praise";
+  }
+`;
+
+  const dot = spawn('dot', ['-Tpng']);
+
+  dot.stdin.write(dag);
+  dot.stdin.end();
+
+  const chunks = [];
+  dot.stdout.on('data', (chunk) => {
+      chunks.push(chunk);
+  });
+
+  dot.stderr.on('data', (data) => {
+      console.error(`Error: ${data}`);
+  });
+
+  dot.on('close', (code) => {
+      if (code === 0) {
+          const imageBuffer = Buffer.concat(chunks);
+          res.setHeader('Content-Type', 'image/png');
+          res.send(imageBuffer);
+      } else {
+          res.status(500).send('Error generating DAG');
+      }
+  });
+});
+
 app.get('/api/chat/:context', (req, res) => {
   const { context } = req.params;
   const { videoTime, fidelityScore } = req.query;
@@ -336,17 +391,28 @@ app.get('/api/steps-timeline', (req, res) => {
 
 app.get('/api/relative-positions', (req, res) => {
   const relativePositions = {
-    1: { top: '6%', left: '40%' },
-    2: { top: '18%', left: '40%' },
-    3: { top: '31%', left: '40%' },
-    4: { top: '44%', left: '20%' },
-    5: { top: '56%', left: '20%' },
-    6: { top: '44%', left: '60%' },
+    1: { top: '6.5%', left: '50%' },
+    2: { top: '23.5%', left: '50%' },
+    3: { top: '40.5%', left: '50%' },
+    4: { top: '58%', left: '24%' },
+    5: { top: '76%', left: '24%' },
+    6: { top: '58%', left: '76%' },
+    7: { top: '76%', left: '76%' },
+    8: { top: '93%', left: '76%' },
   };
 
   res.json(relativePositions);
 });
 
+app.get('/api/fidelity-messages', (req, res) => {
+  const fidelityMessages = messages.map((message) => ({
+      timestamp: message.timestamp,
+      fidelityScore: message.fidelityScore,
+      strategy: message.strategy,
+  }));
+
+  res.json(fidelityMessages);
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

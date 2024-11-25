@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './CSS/ProcessDiagram.css';
 
 const ProcessDiagram = ({ videoTime }) => {
-  const [uploadedImage, setUploadedImage] = useState(null);
   const [highlightPosition, setHighlightPosition] = useState({ top: '6%', left: '40%' });
   const [currentStep, setCurrentStep] = useState(null);
   const [isStepCorrect, setIsStepCorrect] = useState(null);
   const [stepsTimeline, setStepsTimeline] = useState([]);
+  const [dagImageUrl, setDagImageUrl] = useState('');
   const [relativePositions, setRelativePositions] = useState({});
-  const imageRef = useRef(null);
 
+  // Fetch the steps timeline
   useEffect(() => {
     const fetchStepsTimeline = async () => {
       try {
@@ -27,6 +27,7 @@ const ProcessDiagram = ({ videoTime }) => {
     fetchStepsTimeline();
   }, []);
 
+  // Fetch the relative positions for the steps
   useEffect(() => {
     const fetchRelativePositions = async () => {
       try {
@@ -44,37 +45,27 @@ const ProcessDiagram = ({ videoTime }) => {
     fetchRelativePositions();
   }, []);
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('image', file);
-
+  // Fetch the DAG as an image
+  useEffect(() => {
+    const fetchDagImage = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/upload-image', {
-          method: 'POST',
-          body: formData,
-        });
-
+        const response = await fetch('http://localhost:5000/generate-dag');
         if (!response.ok) {
-          throw new Error('Failed to upload image');
+          throw new Error('Failed to fetch DAG image');
         }
 
-        const { imageUrl } = await response.json();
-        setUploadedImage(imageUrl);
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        setDagImageUrl(imageUrl);
       } catch (error) {
-        console.error('Error uploading image:', error);
+        console.error('Error fetching DAG image:', error);
       }
-    }
-  };
+    };
 
-  useEffect(() => {
-    if (!imageRef.current || !currentStep) return;
+    fetchDagImage();
+  }, []);
 
-    const stepPosition = relativePositions[currentStep] || { top: '6%', left: '40%' };
-    setHighlightPosition(stepPosition);
-  }, [currentStep, relativePositions]);
-
+  // Determine the current step based on video time
   useEffect(() => {
     const lastStepInTime = stepsTimeline.filter((step) => step.timestamp <= videoTime).pop();
 
@@ -87,22 +78,25 @@ const ProcessDiagram = ({ videoTime }) => {
     }
   }, [videoTime, stepsTimeline]);
 
+  // Update the highlight position
+  useEffect(() => {
+    if (!currentStep) return;
+
+    const stepPosition = relativePositions[currentStep] || { top: '6%', left: '40%' };
+    setHighlightPosition(stepPosition);
+  }, [currentStep, relativePositions]);
+
   return (
-    <div className={`process-diagram-container ${uploadedImage ? 'uploaded' : ''}`}>
+    <div className="process-diagram-container">
       <h2>Process Diagram</h2>
 
-      <div className="upload-section">
-        <input type="file" accept="image/*" onChange={handleImageUpload} />
-      </div>
-
-      {uploadedImage && (
-        <div className="process-illustration-container">
+      <div className="process-illustration-container">
+        {dagImageUrl ? (
           <div className="image-wrapper">
             <img
-              src={uploadedImage}
+              src={dagImageUrl}
               alt="Process Diagram"
               className="process-diagram"
-              ref={imageRef}
             />
             {currentStep !== null && (
               <div
@@ -114,8 +108,10 @@ const ProcessDiagram = ({ videoTime }) => {
               ></div>
             )}
           </div>
-        </div>
-      )}
+        ) : (
+          <p>Loading process diagram...</p>
+        )}
+      </div>
     </div>
   );
 };

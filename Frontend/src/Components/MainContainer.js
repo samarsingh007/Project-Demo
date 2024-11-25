@@ -11,7 +11,6 @@ const MainContainer = () => {
   const [videoTime, setVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
-  const [messages, setMessages] = useState([]);
   const [videoId, setVideoId] = useState(null);
 
   const handleMouseDown = (e) => {
@@ -22,13 +21,9 @@ const MainContainer = () => {
 
   const handleMouseMove = (e) => {
     const newWidth = (e.clientX / window.innerWidth) * 100;
-    if (newWidth > 20 && newWidth < 45) {
+    if (newWidth > 15 && newWidth < 45) {
       setLeftWidth(newWidth);
     }
-  };
-  
-  const handleMessagesUpdate = (newMessages) => {
-    setMessages(newMessages);
   };
 
   const handleMouseUp = () => {
@@ -58,7 +53,7 @@ const MainContainer = () => {
           />
           <div className="video-details">
             <TranscriptionWindow videoId={videoId} videoTime={videoTime} />
-            <FidelityScore messages={messages} videoDuration={videoDuration} currentTime={videoTime}/>
+            <FidelityScore videoDuration={videoDuration} currentTime={videoTime}/>
           </div>
         </div>
         <div className='chat-section'>
@@ -67,7 +62,6 @@ const MainContainer = () => {
             videoDuration={videoDuration}
             newVideoUploaded={newVideoUploaded} 
             setNewVideoUploaded={setNewVideoUploaded}
-            onMessagesUpdate={handleMessagesUpdate}  
             seekToTime={(time) => {
               document.querySelector("video").currentTime = time; 
             }}

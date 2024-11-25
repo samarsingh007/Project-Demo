@@ -1,15 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './CSS/FidelityScore.css';
 
-const FidelityScore = ({ messages, videoDuration, currentTime }) => {
+const FidelityScore = ({videoDuration, currentTime }) => {
+  const [messages, setMessages] = useState([]);
   const [selectedStrategy, setSelectedStrategy] = useState("Modeling");
+
+  useEffect(() => {
+    const fetchFidelityMessages = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/fidelity-messages');
+        if (!response.ok) {
+          throw new Error('Failed to fetch fidelity messages');
+        }
+        const data = await response.json();
+        setMessages(data);
+      } catch (error) {
+        console.error('Error fetching fidelity messages:', error);
+      }
+    };
+
+    fetchFidelityMessages();
+  }, []);
 
   const filteredMessages = messages.filter(
     (message) => message.strategy === selectedStrategy
   );
 
   const segments = [];
-
   if (filteredMessages.length > 0 && filteredMessages[0].timestamp > 0) {
     segments.push({
       score: 'green',
@@ -43,13 +60,31 @@ const FidelityScore = ({ messages, videoDuration, currentTime }) => {
   return (
     <div className="fidelity-score-container">
       <h2>Fidelity Score</h2>
-      <div className="strategy-dropdown">
-        <label>Choose Strategy:</label>
-        <select onChange={(e) => setSelectedStrategy(e.target.value)} value={selectedStrategy}>
-          <option value="Modeling">Modeling</option>
-          <option value="Mand-Modeling">Mand-Modeling</option>
-          <option value="Time Delay">Time Delay</option>
-        </select>
+      <div className="strategy-radios">
+        <label>
+          <input
+            type="radio"
+            checked={selectedStrategy === "Modeling"}
+            onChange={() => setSelectedStrategy("Modeling")}
+          />
+          Modeling
+        </label>
+        <label>
+          <input
+            type="radio"
+            checked={selectedStrategy === "Mand-Modeling"}
+            onChange={() => setSelectedStrategy("Mand-Modeling")}
+          />
+          Mand-Modeling
+        </label>
+        <label>
+          <input
+            type="radio"
+            checked={selectedStrategy === "Time Delay"}
+            onChange={() => setSelectedStrategy("Time Delay")}
+          />
+          Time Delay
+        </label>
       </div>
       <div className="fidelity-score-bar">
         {segments.map((segment, index) => (

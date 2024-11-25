@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './CSS/ChatInterface.css';
 
-const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideoUploaded, seekToTime, onMessagesUpdate }) => {
+const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideoUploaded, seekToTime }) => {
   const [messages, setMessages] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
@@ -104,12 +104,6 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [allMessages]);
-  
-  useEffect(() => {
-    if (onMessagesUpdate) {
-      onMessagesUpdate(allMessages);
-    }
-  }, [allMessages, onMessagesUpdate]);
 
   const sendMessage = () => {
     if (currentMessage.trim() !== '') {

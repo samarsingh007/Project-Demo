@@ -4,11 +4,12 @@ import './CSS/FidelityScore.css';
 const FidelityScore = ({videoDuration, currentTime }) => {
   const [messages, setMessages] = useState([]);
   const [selectedStrategy, setSelectedStrategy] = useState("Modeling");
+  const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     const fetchFidelityMessages = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/fidelity-messages');
+        const response = await fetch(`${REACT_APP_API_BASE_URL}/api/fidelity-messages`);
         if (!response.ok) {
           throw new Error('Failed to fetch fidelity messages');
         }
@@ -20,7 +21,7 @@ const FidelityScore = ({videoDuration, currentTime }) => {
     };
 
     fetchFidelityMessages();
-  }, []);
+  }, [REACT_APP_API_BASE_URL]);
 
   const filteredMessages = messages.filter(
     (message) => message.strategy === selectedStrategy

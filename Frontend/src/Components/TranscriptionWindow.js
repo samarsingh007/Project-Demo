@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './CSS/TranscriptionWindow.css';
 
+const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const TranscriptionWindow = ({ videoId, videoTime }) => {
   const [activeTranscription, setActiveTranscription] = useState("No transcription available");
 
@@ -9,7 +11,7 @@ const TranscriptionWindow = ({ videoId, videoTime }) => {
       const fetchTranscriptions = async () => {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/transcriptions/${videoId}?videoTime=${videoTime}`
+            `${REACT_APP_API_BASE_URL}/api/transcriptions/${videoId}?videoTime=${videoTime}`
           );
           if (!response.ok) {
             throw new Error('Failed to fetch transcriptions');

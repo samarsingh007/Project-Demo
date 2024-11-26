@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './CSS/VideoUpload.css';
+const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded, setVideoId }) => {
   const [video, setVideo] = useState(null);
@@ -11,7 +12,7 @@ const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded, setVideoId }) => 
       const formData = new FormData();
       formData.append('video', file);
   
-      const response = await fetch('http://localhost:5000/upload', {
+      const response = await fetch(`${REACT_APP_API_BASE_URL}/upload`, {
         method: 'POST',
         body: formData,
       });

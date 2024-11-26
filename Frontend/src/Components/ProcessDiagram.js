@@ -8,12 +8,12 @@ const ProcessDiagram = ({ videoTime }) => {
   const [stepsTimeline, setStepsTimeline] = useState([]);
   const [dagImageUrl, setDagImageUrl] = useState('');
   const [relativePositions, setRelativePositions] = useState({});
+  const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-  // Fetch the steps timeline
   useEffect(() => {
     const fetchStepsTimeline = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/steps-timeline');
+        const response = await fetch(`${REACT_APP_API_BASE_URL}/api/steps-timeline`);
         if (!response.ok) {
           throw new Error('Failed to fetch steps timeline');
         }
@@ -25,13 +25,12 @@ const ProcessDiagram = ({ videoTime }) => {
     };
 
     fetchStepsTimeline();
-  }, []);
+  }, [REACT_APP_API_BASE_URL]);
 
-  // Fetch the relative positions for the steps
   useEffect(() => {
     const fetchRelativePositions = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/relative-positions');
+        const response = await fetch(`${REACT_APP_API_BASE_URL}/api/relative-positions`);
         if (!response.ok) {
           throw new Error('Failed to fetch relative positions');
         }
@@ -43,13 +42,12 @@ const ProcessDiagram = ({ videoTime }) => {
     };
 
     fetchRelativePositions();
-  }, []);
+  }, [REACT_APP_API_BASE_URL]);
 
-  // Fetch the DAG as an image
   useEffect(() => {
     const fetchDagImage = async () => {
       try {
-        const response = await fetch('http://localhost:5000/generate-dag');
+        const response = await fetch(`${REACT_APP_API_BASE_URL}/generate-dag`);
         if (!response.ok) {
           throw new Error('Failed to fetch DAG image');
         }
@@ -63,9 +61,8 @@ const ProcessDiagram = ({ videoTime }) => {
     };
 
     fetchDagImage();
-  }, []);
+  }, [REACT_APP_API_BASE_URL]);
 
-  // Determine the current step based on video time
   useEffect(() => {
     const lastStepInTime = stepsTimeline.filter((step) => step.timestamp <= videoTime).pop();
 
@@ -78,7 +75,6 @@ const ProcessDiagram = ({ videoTime }) => {
     }
   }, [videoTime, stepsTimeline]);
 
-  // Update the highlight position
   useEffect(() => {
     if (!currentStep) return;
 

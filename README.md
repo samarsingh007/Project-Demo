@@ -1,3 +1,2 @@
-To run Frontend: cd ./Frontend npm start
-To run Backend: cd ./Backend npm start
-To run transcription: cd ./Transcription uvicorn app:app --host 0.0.0.0 --port 8000
+To run the Frontend:
+# Instructions to Run the Project\n\n### To run the Frontend:\n```\ncd ./Frontend\nnpm start\n```\n\n### To run the Backend:\n```\ncd ./Backend\nnpm start\n```\n\n### To run the Transcription Service:\n```\ncd ./Transcription\nuvicorn app:app --host [host] --port [port no.]\n```\n

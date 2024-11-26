@@ -11,11 +11,12 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
   const [messageQueue, setMessageQueue] = useState([]);
   const processedMessages = useRef(new Set());
   const chatBoxRef = useRef(null);
+  const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   const fetchMessages = useCallback(async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/chat/${context}?videoTime=${videoTime || 0}`
+        `${REACT_APP_API_BASE_URL}/api/chat/${context}?videoTime=${videoTime || 0}`
       );
       if (!response.ok) {
         throw new Error('Failed to fetch messages');
@@ -25,7 +26,7 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  }, [context, videoTime]);
+  }, [context, videoTime, REACT_APP_API_BASE_URL]);
 
   useEffect(() => {
     fetchMessages();

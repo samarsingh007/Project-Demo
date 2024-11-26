@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const app = express();
-const PORT = 5000;
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
@@ -11,7 +10,16 @@ const FormData = require('form-data');
 const { spawn } = require('child_process');
 
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+require('dotenv').config();
+const HOST = process.env.HOST;
+const PORT = process.env.PORT;
+const FRONTEND_PORT = process.env.FRONTEND_PORT;
+const TRANSCRIPTION_HOST = process.env.TRANSCRIPTION_HOST;
+const TRANSCRIPTION_PORT = process.env.TRANSCRIPTION_PORT;
+const FRONTEND_URL = `http://${HOST}:${FRONTEND_PORT}`;
+const TRANSCRIPTION_URL = `http://${TRANSCRIPTION_HOST}:${TRANSCRIPTION_PORT}`;
+
+app.use(cors({ origin: FRONTEND_URL }));
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -299,7 +307,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
   try {
     const videoPath = req.file.path;
     const videoId = uuidv4();
-    const videoUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+    const videoUrl = `http://${HOST}:${PORT}/uploads/${req.file.filename}`;
 
     transcriptionStore.set(videoId, { videoUrl, transcription: null, status: "processing" });
 
@@ -308,8 +316,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
         const formData = new FormData();
         formData.append("video", fs.createReadStream(videoPath));
 
-        const pythonServiceUrl = "http://127.0.0.1:8000/transcribe";
-        const response = await axios.post(pythonServiceUrl, formData, {
+        const response = await axios.post(`${TRANSCRIPTION_URL}/transcribe`, formData, {
           headers: formData.getHeaders(),
         });
 
@@ -370,7 +377,7 @@ app.post('/api/upload-image', upload.single('image'), (req, res) => {
     return res.status(400).json({ error: 'No image file uploaded' });
   }
 
-  const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  const imageUrl = `http://${HOST}:${PORT}/uploads/${req.file.filename}`;
   res.json({ success: true, imageUrl });
 });
 
@@ -415,5 +422,5 @@ app.get('/api/fidelity-messages', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });

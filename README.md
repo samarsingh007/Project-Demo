@@ -13,6 +13,7 @@ The **Transcription Service** can simply be run using the `uvicorn` command as m
   - `graphviz`: Install it using `sudo apt install graphviz`.
 - Other packages for the frontend and backend can be installed during installation of node and react, using: `npm install` in the respective directory.
 - **Python (Transcription Service)**:
+  - `pip install -r "requirements.txt"` 
   - `openai_whisper`: Install it using `pip install openai_whisper`.
   - `uvicorn`: Install it using `pip install uvicorn`.
   - `moviepy`: Install it using `pip install moviepy`.

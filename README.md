@@ -8,7 +8,7 @@
 ### Environment Variables:- The **Frontend** and **Backend** have their own `.env` files to manage environment variables.
 The **Transcription Service** can simply be run using the `uvicorn` command as mentioned above, where the host and port can be specified dynamically in the command.
 
-###Important Packages to be installed
+### Important Packages to be installed
 - **Backend**:
   - `graphviz`: Install it using `sudo apt install graphviz`.
 - Other packages for the frontend and backend can be installed during installation of node and react, using: `npm install` in the respective directory.

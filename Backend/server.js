@@ -90,8 +90,13 @@ const messages = [
 const chatMessages = {
   introduction: [
     {
-    text: "Hi [Parent’s Name]! Let’s review your latest session with [Child’s Name]. I’m here to help you reflect on what went well, provide feedback, and work on any areas where you’d like more support. Ready to start?",
+    text: "Hi [Parent’s Name]! Let’s review your latest session with [Child’s Name]. I’m here to help you reflect on what went well, provide feedback, and work on any areas where you’d like more support.",
     sender: "bot",
+    },
+    {
+      text: "Let’s begin our session. Ready to start?",
+      sender: "bot",
+      awaitResponse: true
     }
   ],
   selfReflection: [
@@ -110,7 +115,11 @@ const chatMessages = {
       awaitResponse: true
     },
     {
-      text: "Great reflections! It’s so helpful to consider both the strengths and areas to adjust. Now let’s look at some specific feedback.",
+      text: "Great reflections! It’s so helpful to consider both the strengths and areas to adjust.",
+      sender: "bot"
+    },
+    {
+      text: " Now let’s look at some specific feedback. Now you may begin to play the video.",
       sender: "bot"
     }
   ],

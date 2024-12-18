@@ -4,6 +4,7 @@ import VideoUpload from './VideoUpload';
 import FidelityScore from './FidelityScore';
 import TranscriptionWindow from './TranscriptionWindow';
 import ChatInterface from './ChatInterface';
+import HighlightsTimeline from './HighlightsTimeline';
 import './CSS/MainContainer.css';
 
 const MainContainer = () => {
@@ -36,6 +37,13 @@ const MainContainer = () => {
     setVideoDuration(duration);
   };
 
+  const seekToTime = (time) => {
+    const video = document.querySelector("video");
+    if (video) {
+      video.currentTime = time;
+    }
+  };
+
   return (
     <div className="content-container">
       <div className="left-container" style={{ width: `${leftWidth}%` }}>
@@ -52,6 +60,9 @@ const MainContainer = () => {
             setVideoId={setVideoId}
           />
           <div className="video-details">
+          {videoDuration > 0 && videoId && (
+            <HighlightsTimeline videoId={videoId} videoDuration={videoDuration} seekToTime={seekToTime}/>
+          )}
             <TranscriptionWindow videoId={videoId} videoTime={videoTime} />
             <FidelityScore videoDuration={videoDuration} currentTime={videoTime}/>
           </div>
@@ -62,9 +73,7 @@ const MainContainer = () => {
             videoDuration={videoDuration}
             newVideoUploaded={newVideoUploaded} 
             setNewVideoUploaded={setNewVideoUploaded}
-            seekToTime={(time) => {
-              document.querySelector("video").currentTime = time; 
-            }}
+            seekToTime={seekToTime}
           />
         </div>
       </div>

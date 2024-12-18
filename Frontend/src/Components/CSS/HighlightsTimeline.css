@@ -1,0 +1,47 @@
+.highlights-timeline-container {
+    position: relative;
+    width: 100%;
+    border: 2.5px solid #ccc;  
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+  
+  .timeline {
+    position: relative;
+    width: 100%;
+    height: 10px;
+    margin: 15px 0;
+  }
+  
+  .timeline-bar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ddd;
+    height: 3px;
+    width: 100%;
+    border-radius: 5px;
+  }
+  
+  .timeline-marker {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+  
+  .timeline-marker::before {
+    content: "";
+    display: block;
+    width: 3px;
+    height: 30px;
+    background: #4CAF50;
+    transform: translateX(-50%);
+    transition: width 0.2s;
+  }
+  
+  .timeline-marker:hover::before {
+    width: 10px;
+    background: #45a049;
+  }
+  

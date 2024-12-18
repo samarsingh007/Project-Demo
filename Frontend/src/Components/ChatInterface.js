@@ -9,11 +9,18 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
   const [context, setContext] = useState();
   const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
   const [messageQueue, setMessageQueue] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
   const processedMessages = useRef(new Set());
   const chatBoxRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
   const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const [parentName, setParentName] = useState('');
+  const [childName, setChildName] = useState('');
 
   const fetchMessages = useCallback(async () => {
+    if (!context) return;
+    if (context === 'askParentName' || context === 'askChildName') return;
+
     try {
       const response = await fetch(
         `${REACT_APP_API_BASE_URL}/api/chat/${context}?videoTime=${videoTime || 0}`
@@ -21,12 +28,22 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
       if (!response.ok) {
         throw new Error('Failed to fetch messages');
       }
-      const data = await response.json();
+      let data = await response.json();
+
+      if (parentName && childName) {
+        data = data.map((msg) => {
+          let newText = msg.text;
+          newText = newText.replace(/\[Parent’s Name\]/g, parentName);
+          newText = newText.replace(/\[Child’s Name\]/g, childName);
+          return { ...msg, text: newText };
+        });
+      }
+
       setMessages(data);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  }, [context, videoTime, REACT_APP_API_BASE_URL]);
+  }, [context, videoTime, REACT_APP_API_BASE_URL, parentName, childName]);
 
   useEffect(() => {
     fetchMessages();
@@ -35,11 +52,11 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
   useEffect(() => {
     if (messages.length > 0) {
       const newMessages = messages.filter(
-        (msg) => !processedMessages.current.has(msg.text + msg.timestamp)
+        (msg) => !processedMessages.current.has(msg.text + (msg.timestamp || ''))
       );
 
       newMessages.forEach((msg) => {
-        processedMessages.current.add(msg.text + msg.timestamp);
+        processedMessages.current.add(msg.text + (msg.timestamp || ''));
       });
 
       setMessageQueue((prevQueue) => [...prevQueue, ...newMessages]);
@@ -47,17 +64,22 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
   }, [messages]);
 
   useEffect(() => {
-    if (!isAwaitingResponse && messageQueue.length > 0) {
+    if (!isAwaitingResponse && messageQueue.length > 0 && !isTyping) {
+      setIsTyping(true);
+
       const nextMessage = messageQueue[0];
-      setAllMessages((prevMessages) => [...prevMessages, nextMessage]);
+      typingTimeoutRef.current = setTimeout(() => {
+        setAllMessages((prevMessages) => [...prevMessages, nextMessage]);
 
-      if (nextMessage.awaitResponse) {
-        setIsAwaitingResponse(true);
-      }
+        if (nextMessage.awaitResponse) {
+          setIsAwaitingResponse(true);
+        }
 
-      setMessageQueue((prevQueue) => prevQueue.slice(1));
+        setMessageQueue((prevQueue) => prevQueue.slice(1));
+        setIsTyping(false);
+      }, 1000);
     }
-  }, [messageQueue, isAwaitingResponse]);
+  }, [messageQueue, isAwaitingResponse, isTyping]);
 
   useEffect(() => {
     if (newVideoUploaded) {
@@ -72,7 +94,13 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
       }
 
       setNewVideoUploaded(false);
-      setContext('introduction');
+      setContext('askParentName');
+      const askParentMsg = {
+        text: "Please enter the parent's name:",
+        sender: 'bot'
+      };
+      setAllMessages((prev) => [...prev, askParentMsg]);
+      setIsAwaitingResponse(true);
     }
   }, [newVideoUploaded, setNewVideoUploaded]);
 
@@ -90,7 +118,6 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
 
   useEffect(() => {
     if (context === 'introduction') {
-      setContext('selfReflection');
     } else if (context === 'selfReflection' && videoTime > 0) {
       setContext('fidelity');
     } else if (context === 'fidelity' && videoTime >= videoDuration - 1) {
@@ -98,13 +125,20 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
     } else if (context === 'problemSolvingDialogue' && videoTime >= videoDuration) {
       setContext('jointPlanning');
     }
-  }, [context, videoTime, newVideoUploaded, videoDuration]);
+  }, [context, videoTime, videoDuration]);
 
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
-  }, [allMessages]);
+  }, [allMessages, isTyping]);
+
+  const handleYesClick = () => {
+    if (context === 'introduction' && isAwaitingResponse) {
+      setIsAwaitingResponse(false);
+      setContext('selfReflection');
+    }
+  };
 
   const sendMessage = () => {
     if (currentMessage.trim() !== '') {
@@ -117,6 +151,20 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
       setCurrentMessage('');
       if (isAwaitingResponse) {
         setIsAwaitingResponse(false);
+      }
+
+      if (context === 'askParentName') {
+        setParentName(userMessage.text.trim());
+        const askChildMsg = {
+          text: "Please enter the child's name:",
+          sender: 'bot'
+        };
+        setAllMessages((prev) => [...prev, askChildMsg]);
+        setContext('askChildName');
+        setIsAwaitingResponse(true);
+      } else if (context === 'askChildName') {
+        setChildName(userMessage.text.trim());
+        setContext('introduction');
       }
     }
   };
@@ -168,8 +216,19 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
                 msg.text
               )}
             </span>
+            {msg.awaitResponse && context === 'introduction' && isAwaitingResponse && (
+              <button className="response-buttons" onClick={handleYesClick}>Yes</button>
+            )}
           </div>
         ))}
+
+        {isTyping && !isAwaitingResponse && (
+          <div className="typing-indicator">
+            <span className="dot"></span>
+            <span className="dot"></span>
+            <span className="dot"></span>
+          </div>
+        )}
       </div>
       <div className="input-container">
         <input

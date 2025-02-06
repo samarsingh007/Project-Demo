@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './CSS/ChatInterface.css';
 
-const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideoUploaded, seekToTime }) => {
+/** Imports for images/icons */
+import BotLogo from '../../../Assets/main-logo.svg'; 
+import VoiceIcon from '../../../Assets/voice.svg';
+
+const ChatInterface = ({ 
+  videoTime, 
+  videoDuration, 
+  newVideoUploaded, 
+  setNewVideoUploaded, 
+  seekToTime 
+}) => {
   const [messages, setMessages] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
@@ -10,13 +20,16 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
   const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
   const [messageQueue, setMessageQueue] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  
   const processedMessages = useRef(new Set());
   const chatBoxRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+
   const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const [parentName, setParentName] = useState('');
   const [childName, setChildName] = useState('');
 
+  /** Fetch logic & effects omitted for brevity; keep the same logic as before **/
   const fetchMessages = useCallback(async () => {
     if (!context) return;
     if (context === 'askParentName' || context === 'askChildName') return;
@@ -30,6 +43,7 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
       }
       let data = await response.json();
 
+      // Replace placeholders with parent/child names
       if (parentName && childName) {
         data = data.map((msg) => {
           let newText = msg.text;
@@ -38,16 +52,13 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
           return { ...msg, text: newText };
         });
       }
-
       setMessages(data);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
   }, [context, videoTime, REACT_APP_API_BASE_URL, parentName, childName]);
 
-  useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
+  useEffect(() => { fetchMessages(); }, [fetchMessages]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -104,20 +115,22 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
     }
   }, [newVideoUploaded, setNewVideoUploaded]);
 
+  /** Initial “hi” message effect **/
   useEffect(() => {
     const initialMessage = {
       text: "Hi, I'm a conversational assistant designed to help.",
       sender: 'bot',
     };
-
     if (!processedMessages.current.has(initialMessage.text)) {
       processedMessages.current.add(initialMessage.text);
       setAllMessages([initialMessage]);
     }
   }, []);
 
+  /** Handle context transitions based on video time **/
   useEffect(() => {
     if (context === 'introduction') {
+      // ...
     } else if (context === 'selfReflection' && videoTime > 0) {
       setContext('fidelity');
     } else if (context === 'fidelity' && videoTime >= videoDuration - 1) {
@@ -127,12 +140,14 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
     }
   }, [context, videoTime, videoDuration]);
 
+  /** Keep chat scrolled to bottom **/
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [allMessages, isTyping]);
 
+  /** If the bot is awaiting a “Yes” click for “introduction” context **/
   const handleYesClick = () => {
     if (context === 'introduction' && isAwaitingResponse) {
       setIsAwaitingResponse(false);
@@ -140,6 +155,7 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
     }
   };
 
+  /** Send user message **/
   const sendMessage = () => {
     if (currentMessage.trim() !== '') {
       const userMessage = {
@@ -169,12 +185,14 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
     }
   };
 
+  /** Format a timestamp (seconds) into mm:ss **/
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
     return `${minutes}:${secs}`;
   };
 
+  /** Expand/collapse long messages **/
   const toggleExpandMessage = (index) => {
     setExpandedMessages((prev) => ({
       ...prev,
@@ -184,56 +202,79 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
 
   return (
     <div className="chat-interface">
-      <h2>AI Assistant</h2>
       <div className="chat-box" ref={chatBoxRef}>
         {allMessages.map((msg, index) => (
-          <div key={index} className={`chat-message ${msg.sender}`}>
-            {msg.sender === 'bot' && msg.timestamp && (
-              <span className="message-timestamp">
-                [
-                <button onClick={() => seekToTime(msg.timestamp)}>
-                  {formatTime(msg.timestamp)}
-                </button>
-                ]
-              </span>
+          <div key={index} className={`chat-message ${msg.sender} fade-in`}>
+            {/* If this is a bot message, show bot avatar at the left */}
+            {msg.sender === 'bot' && (
+              <img src={BotLogo} alt="Bot" className="bot-avatar" />
             )}
-            <span className="message-text">
-              {msg.text.length > 210 && !expandedMessages[index] ? (
-                <>
-                  {msg.text.substring(0, 210)}...{' '}
-                  <button className="toggle-expand-btn" onClick={() => toggleExpandMessage(index)}>
-                    Show More
+
+            <div className="message-content">
+              {/* Timestamp button if the bot message has a timestamp */}
+              {msg.sender === 'bot' && msg.timestamp && (
+                <span className="message-timestamp">
+                  [
+                  <button onClick={() => seekToTime(msg.timestamp)}>
+                    {formatTime(msg.timestamp)}
                   </button>
-                </>
-              ) : msg.text.length > 210 && expandedMessages[index] ? (
-                <>
-                  {msg.text}{' '}
-                  <button className="toggle-expand-btn" onClick={() => toggleExpandMessage(index)}>
-                    Show Less
-                  </button>
-                </>
-              ) : (
-                msg.text
+                  ]
+                </span>
               )}
-            </span>
-            {msg.awaitResponse && context === 'introduction' && isAwaitingResponse && (
-              <button className="response-buttons" onClick={handleYesClick}>Yes</button>
-            )}
+
+              {/* The main text: could be truncated or full */}
+              <span className="message-text">
+                {msg.text.length > 210 && !expandedMessages[index] ? (
+                  <>
+                    {msg.text.substring(0, 210)}...{' '}
+                    <button
+                      className="toggle-expand-btn"
+                      onClick={() => toggleExpandMessage(index)}
+                    >
+                      Show More
+                    </button>
+                  </>
+                ) : msg.text.length > 210 && expandedMessages[index] ? (
+                  <>
+                    {msg.text}{' '}
+                    <button
+                      className="toggle-expand-btn"
+                      onClick={() => toggleExpandMessage(index)}
+                    >
+                      Show Less
+                    </button>
+                  </>
+                ) : (
+                  msg.text
+                )}
+              </span>
+
+              {/* "Yes" button if awaiting a response in introduction */}
+              {msg.awaitResponse && context === 'introduction' && isAwaitingResponse && (
+                <button className="response-buttons" onClick={handleYesClick}>
+                  Yes
+                </button>
+              )}
+            </div>
           </div>
         ))}
 
+        {/* The typing indicator if the bot is "thinking" */}
         {isTyping && !isAwaitingResponse && (
           <div className="typing-indicator">
+            <img src={BotLogo} alt="Bot" className="typing-bot-avatar" />
             <span className="dot"></span>
             <span className="dot"></span>
             <span className="dot"></span>
           </div>
         )}
       </div>
+
+      {/* Input row */}
       <div className="input-container">
         <input
           type="text"
-          placeholder="Type a message..."
+          placeholder="Chat with AI Assistant ..."
           value={currentMessage}
           onChange={(e) => setCurrentMessage(e.target.value)}
           onKeyDown={(e) => {
@@ -242,8 +283,15 @@ const ChatInterface = ({ videoTime, videoDuration, newVideoUploaded, setNewVideo
             }
           }}
         />
+
+        {/* "Send" button */}
         <button className="send-button" onClick={sendMessage}>
           Send
+        </button>
+
+        {/* "Voice" button using your imported voice icon */}
+        <button className="voice-button">
+          <img src={VoiceIcon} alt="Voice" className="voice-icon" />
         </button>
       </div>
     </div>

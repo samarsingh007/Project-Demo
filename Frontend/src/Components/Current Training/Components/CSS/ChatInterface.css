@@ -1,0 +1,245 @@
+.chat-interface {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* The scrollable area for messages */
+.chat-box {
+  height: 100%;
+  overflow-y: auto;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Each message bubble */
+.chat-message {
+  display: flex;             /* let us place avatar + content in row */
+  align-items: flex-start;   /* top-align the avatar & text if the text is multiline */
+  margin-bottom: 10px;
+  word-wrap: break-word;
+  color: #787486;
+  font-size: 1.1rem;
+  max-width: 90%;
+}
+
+.chat-message.bot {
+  margin-right: auto;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.chat-message.user {
+  margin-left: auto;
+  margin-right: 10px;
+  background-color: #ffffffb7; /* user bubble color */
+  padding: 10px;
+  border-radius: 10px;
+  text-align: left;
+  width: 70%;
+}
+
+.fade-in {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The avatar image for the bot */
+.bot-avatar {
+  width: 35px;
+  height: 35px;
+  margin-right: 8px;
+}
+
+/* A wrapper for the textual content (timestamp, text, etc.) */
+.message-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Timestamp styling */
+.message-timestamp {
+  color: #0079fa;
+  margin-bottom: 5px;
+}
+
+.message-timestamp button {
+  color: #0079fa;
+  background: none;
+  border: none;
+  padding: 0 2px;
+  cursor: pointer;
+  font: inherit; /* keep same font as parent */
+}
+
+.message-timestamp button:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* The main text of the message */
+.message-text {
+  line-height: 1.4;
+  white-space: pre-wrap;     /* or normal, if you don’t need to preserve line breaks */
+  word-break: break-word;
+}
+
+/* "Show More" link styling */
+.toggle-expand-btn {
+  color: #007bff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+
+.toggle-expand-btn:hover {
+  text-decoration: underline;
+}
+
+/* The "Yes" button for responses */
+.response-buttons {
+  margin-top: 10px; 
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 16px;
+  border-radius: 40px;
+  cursor: pointer;
+}
+
+.response-buttons:hover {
+  background-color: #45a049;
+}
+
+/* Typing indicator at the bottom of chat-box */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.typing-indicator .dot {
+  width: 8px;
+  height: 8px;
+  background: #999;
+  border-radius: 50%;
+  margin: 0 4px;
+  opacity: 0.4;
+  animation: typingIndicator 1s infinite;
+}
+
+.typing-indicator .dot:nth-child(1) {
+  animation-delay: 0s;
+}
+.typing-indicator .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-indicator .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingIndicator {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* Input row at the bottom */
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;       /* space between input and buttons */
+  background: white;
+  padding: 4px 8px;
+  border-radius: 10px;
+}
+
+.input-container:focus-within {
+  border: 1px solid #b5b5b5;
+}
+
+/* The text input */
+input[type="text"] {
+  flex: 1;        /* grow to fill space */
+  height: 20px;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+/* The "Send" button */
+.send-button {
+  padding: 10px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.send-button:hover {
+  background-color: #0056b3;
+}
+
+/* The "Voice" button, same shape but different color if you like */
+.voice-button {
+  padding: 10px 16px;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.voice-button:hover {
+  background-color: #ddd;
+}
+
+/* The voice icon inside the button */
+.voice-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Custom scrollbar (Chrome/Safari/Edge) as before */
+.chat-box::-webkit-scrollbar {
+  width: 5px;
+  background: transparent;
+}
+.chat-box::-webkit-scrollbar-track {
+  background: linear-gradient(to bottom, #ccc 0%, #d6caff 50%);
+  border-radius: 6px;
+}
+.chat-box::-webkit-scrollbar-thumb {
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+.chat-box::-webkit-scrollbar-thumb:hover {
+  background-color: #f5f5f5;
+}
+.chat-box::-webkit-scrollbar-corner {
+  background: transparent;
+}

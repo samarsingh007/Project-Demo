@@ -1,45 +1,13 @@
+/* MainContainer.css */
+.main-wrapper {
+  display: flex;
+  overflow: hidden; /* so the sidebar + content are on one row */
+}
+
 .content-container {
   display: flex;
-  align-items: stretch;
-  border: 2px solid #ccc;
-  border-radius: 20px;
+  flex:1;
+  padding-left: 25px;
+  flex-direction: column;
   overflow: hidden;
-  min-height: 84vh;
-}
-
-.left-container, .right-container {
-  display: flex;
-  align-items: flex-start;
-}
-
-.divider {
-  width: 3px;
-  cursor: ew-resize;
-  background-color: #ccc;
-  transition: background-color 0.3s;
-}
-
-.divider:hover {
-  background-color: #999;
-}
-
-.video-section {
-  flex: 1.5;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.video-details {
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-}
-
-.chat-section{
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  max-width: 50%;
-  height: 100%;
 }

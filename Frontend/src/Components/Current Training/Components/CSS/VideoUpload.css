@@ -1,0 +1,144 @@
+/* 1. Container (entire component): light grey background */
+.training-video-container {
+  width: 100%;
+  margin: 0 auto;         /* center horizontally */
+  font-family: sans-serif;
+  border-radius: 15px;
+}
+
+/* 2. Header row */
+.training-video-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-radius: 5px 5px 0 0;
+  /* If you prefer no top border, remove it. */
+}
+
+/* Orange dot and title side-by-side */
+.title-with-dot {
+  display: flex;
+  align-items: center;
+}
+
+/* The dot next to "Training Video" */
+.orange-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #ffa500;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+/* Title text */
+.training-video-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.choose-button-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* "Choose" button at the top-right */
+.choose-button {
+  display: flex;           /* place icon & text side-by-side */
+  align-items: center;
+  gap: 6px;                /* small spacing between icon and text */
+  background-color: transparent;
+  border: none;
+  font-size: 1rem;
+  color: #818181;
+  cursor: pointer;
+  outline: none;
+  padding: 4px 8px;
+}
+
+/* 3. Thin orange divider under the header */
+.orange-divider {
+  height: 3px;
+  background-color: #ffa500;
+  border-radius: 1px;
+}
+
+/* 4. Video area (darker grey background than container) */
+.video-area {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;          /* adjust as needed */
+  margin: 16px 0 16px 0;
+  background: rgba(0, 0, 0, 0.023);
+  border-radius: 10px;
+}
+
+/* Placeholder text when no video is present, with L-shaped corners */
+.video-placeholder {
+  position: relative;       /* enables ::before and ::after positioning */
+  font-size: 2.2rem;
+  font-weight: bold;
+  font-stretch: expanded;
+  color: #a0a0a0ba;
+  padding: 16px 24px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Top-left "L" shape & bottom-right "L" shape (in orange) */
+.video-placeholder::before,
+.video-placeholder::after {
+  content: "";
+  position: absolute;
+  width: 25px;               /* how long each ‘L’ arm is */
+  height: 25px;
+  border-color: #b6b6b6;     /* L shape color */
+  border-style: solid;
+  border-width: 5px;
+  border-radius: 4px;
+}
+
+/* Top-left corner L */
+.video-placeholder::before {
+  top: 0;
+  left: 0;
+  border-right: none;        /* so it only shows top & left sides */
+  border-bottom: none;
+}
+
+/* Bottom-right corner L */
+.video-placeholder::after {
+  bottom: 0;
+  right: 0;
+  border-left: none;         /* so it only shows bottom & right sides */
+  border-top: none;
+}
+
+/* If a video is present, it will fill the entire video-area */
+video {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 5px;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 5. AI Analysis section (darkest grey background) */
+.ai-analysis-section {
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+/* Heading in AI Analysis section */
+.ai-analysis-section h3 {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: #333;
+}

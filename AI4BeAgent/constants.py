@@ -36,7 +36,7 @@ USE_MIN_SEC_FORMAT = True
 # trigger words for segmentation
 TRIGGER_WORDS = ["Can", "What", "Where"]
 
-OPENAI_API_KEY = "OPENAI_API_KEY"
+OPENAI_API_KEY = OPENAI_API_KEY
 
 Rev_API_key = "Your_API_Key"
 

@@ -3,6 +3,8 @@
 # dependencies
 /Frontend/node_modules
 /Backend/node_modules
+/Backend/.env
+/Frontend/.env
 /Transcription/__pycache__
 /.pnp
 .pnp.js

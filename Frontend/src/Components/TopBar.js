@@ -1,9 +1,9 @@
-import React from 'react';
-import './CSS/TopBar.css';
-import QuestionIcon from '../Assets/question.svg';   // example icons
-import BellIcon from '../Assets/bell.svg';
-import UserAvatar from '../Assets/user-avatar.svg';   // user profile image
-import ArrowDown from '../Assets/arrow-down.svg';
+import React from "react";
+import "./CSS/TopBar.css";
+import QuestionIcon from "../Assets/question.svg"; // example icons
+import BellIcon from "../Assets/bell.svg";
+import UserAvatar from "../Assets/user-avatar.svg"; // user profile image
+import ArrowDown from "../Assets/arrow-down.svg";
 
 const TopBar = () => {
   return (

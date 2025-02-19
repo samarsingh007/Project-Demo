@@ -5,7 +5,6 @@
   flex: 1;
 }
 
-/* The scrollable area for messages */
 .chat-box {
   height: 100%;
   overflow-y: auto;
@@ -16,10 +15,9 @@
   flex-direction: column;
 }
 
-/* Each message bubble */
 .chat-message {
-  display: flex;             /* let us place avatar + content in row */
-  align-items: flex-start;   /* top-align the avatar & text if the text is multiline */
+  display: flex;
+  align-items: flex-start;
   margin-bottom: 10px;
   word-wrap: break-word;
   color: #787486;
@@ -36,7 +34,7 @@
 .chat-message.user {
   margin-left: auto;
   margin-right: 10px;
-  background-color: #ffffffb7; /* user bubble color */
+  background-color: #ffffffb7;
   padding: 10px;
   border-radius: 10px;
   text-align: left;
@@ -58,20 +56,17 @@
   }
 }
 
-/* The avatar image for the bot */
 .bot-avatar {
   width: 35px;
   height: 35px;
   margin-right: 8px;
 }
 
-/* A wrapper for the textual content (timestamp, text, etc.) */
 .message-content {
   display: flex;
   flex-direction: column;
 }
 
-/* Timestamp styling */
 .message-timestamp {
   color: #0079fa;
   margin-bottom: 5px;
@@ -83,7 +78,7 @@
   border: none;
   padding: 0 2px;
   cursor: pointer;
-  font: inherit; /* keep same font as parent */
+  font: inherit;
 }
 
 .message-timestamp button:hover {
@@ -91,14 +86,12 @@
   text-decoration: underline;
 }
 
-/* The main text of the message */
 .message-text {
   line-height: 1.4;
-  white-space: pre-wrap;     /* or normal, if you don’t need to preserve line breaks */
+  white-space: pre-wrap;
   word-break: break-word;
 }
 
-/* "Show More" link styling */
 .toggle-expand-btn {
   color: #007bff;
   background: none;
@@ -112,10 +105,9 @@
   text-decoration: underline;
 }
 
-/* The "Yes" button for responses */
 .response-buttons {
-  margin-top: 10px; 
-  background-color: #4CAF50;
+  margin-top: 10px;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -128,7 +120,6 @@
   background-color: #45a049;
 }
 
-/* Typing indicator at the bottom of chat-box */
 .typing-indicator {
   display: flex;
   align-items: center;
@@ -157,16 +148,21 @@
 }
 
 @keyframes typingIndicator {
-  0% { opacity: 0.4; }
-  50% { opacity: 1; }
-  100% { opacity: 0.4; }
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
 }
 
-/* Input row at the bottom */
 .input-container {
   display: flex;
   align-items: center;
-  gap: 8px;       /* space between input and buttons */
+  gap: 8px;
   background: white;
   padding: 4px 8px;
   border-radius: 10px;
@@ -176,9 +172,8 @@
   border: 1px solid #b5b5b5;
 }
 
-/* The text input */
 input[type="text"] {
-  flex: 1;        /* grow to fill space */
+  flex: 1;
   height: 20px;
   padding: 10px;
   border-radius: 10px;
@@ -187,7 +182,6 @@ input[type="text"] {
   background: none;
 }
 
-/* The "Send" button */
 .send-button {
   padding: 10px 16px;
   background-color: #007bff;
@@ -202,7 +196,6 @@ input[type="text"] {
   background-color: #0056b3;
 }
 
-/* The "Voice" button, same shape but different color if you like */
 .voice-button {
   padding: 10px 16px;
   background-color: #ffffff;
@@ -217,13 +210,11 @@ input[type="text"] {
   background-color: #ddd;
 }
 
-/* The voice icon inside the button */
 .voice-icon {
   width: 24px;
   height: 24px;
 }
 
-/* Custom scrollbar (Chrome/Safari/Edge) as before */
 .chat-box::-webkit-scrollbar {
   width: 5px;
   background: transparent;

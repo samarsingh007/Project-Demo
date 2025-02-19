@@ -1,55 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import './CSS/FidelityScore.css';
+import React, { useState } from "react";
+import "./CSS/FidelityScore.css";
 
-const FidelityScore = ({videoDuration, currentTime }) => {
-  const [messages, setMessages] = useState([]);
+const FidelityScore = ({ videoDuration, currentTime, analysisResults }) => {
   const [selectedStrategy, setSelectedStrategy] = useState("Modeling");
-  const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-  useEffect(() => {
-    const fetchFidelityMessages = async () => {
-      try {
-        const response = await fetch(`${REACT_APP_API_BASE_URL}/api/fidelity-messages`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch fidelity messages');
-        }
-        const data = await response.json();
-        setMessages(data);
-      } catch (error) {
-        console.error('Error fetching fidelity messages:', error);
-      }
-    };
+  const parseTime = (timeString) => {
+    const [mm, ss] = timeString.split(":").map(Number);
+    return mm * 60 + ss;
+  };
 
-    fetchFidelityMessages();
-  }, [REACT_APP_API_BASE_URL]);
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, "0");
+    return `${minutes}:${secs}`;
+  };
 
-  const filteredMessages = messages.filter(
-    (message) => message.strategy === selectedStrategy
-  );
+  const filteredMessages = analysisResults.filter((message) => {
+    return message["Begin-End"] && message["Strategy"] === selectedStrategy;
+  });
+
+  const sortedMessages = filteredMessages.sort((a, b) => {
+    const aBegin = parseTime(a["Begin-End"].split("-")[0]);
+    const bBegin = parseTime(b["Begin-End"].split("-")[0]);
+    return aBegin - bBegin;
+  });
 
   const segments = [];
-  if (filteredMessages.length > 0 && filteredMessages[0].timestamp > 0) {
-    segments.push({
-      score: 'green',
-      startPercentage: 0,
-      widthPercentage: videoDuration ? (filteredMessages[0].timestamp / videoDuration) * 100 : 0,
-    });
+
+  if (sortedMessages.length > 0) {
+    const firstBegin = parseTime(sortedMessages[0]["Begin-End"].split("-")[0]);
+    if (firstBegin > 0) {
+      segments.push({
+        score: "green",
+        startPercentage: 0,
+        widthPercentage: videoDuration ? (firstBegin / videoDuration) * 100 : 0,
+      });
+    }
   }
 
-  filteredMessages.forEach((message, index) => {
-    const start = message.timestamp;
-    const end = index === filteredMessages.length - 1 ? videoDuration : filteredMessages[index + 1].timestamp;
-    const startPercentage = videoDuration ? (start / videoDuration) * 100 : 0;
-    const widthPercentage = videoDuration ? ((end - start) / videoDuration) * 100 : 0;
-
+  sortedMessages.forEach((message, index) => {
+    const beginStr = message["Begin-End"].split("-")[0];
+    const begin = parseTime(beginStr);
+    const nextBegin =
+      index === sortedMessages.length - 1
+        ? videoDuration
+        : parseTime(sortedMessages[index + 1]["Begin-End"].split("-")[0]);
+    const startPercentage = videoDuration ? (begin / videoDuration) * 100 : 0;
+    const widthPercentage = videoDuration
+      ? ((nextBegin - begin) / videoDuration) * 100
+      : 0;
     segments.push({
-      score: message.fidelityScore,
+      score: message["Fidelity Score"],
       startPercentage,
       widthPercentage,
     });
   });
 
-  const cursorPosition = videoDuration ? (currentTime / videoDuration) * 100 : 0;
+  const cursorPosition = videoDuration
+    ? (currentTime / videoDuration) * 100
+    : 0;
 
   const scaleMarkers = [];
   for (let i = 0; i <= Math.floor(videoDuration / 60); i++) {
@@ -73,8 +84,8 @@ const FidelityScore = ({videoDuration, currentTime }) => {
         <label>
           <input
             type="radio"
-            checked={selectedStrategy === "Mand-Modeling"}
-            onChange={() => setSelectedStrategy("Mand-Modeling")}
+            checked={selectedStrategy === "Mand-model"}
+            onChange={() => setSelectedStrategy("Mand-model")}
           />
           Mand-Modeling
         </label>
@@ -95,15 +106,22 @@ const FidelityScore = ({videoDuration, currentTime }) => {
             style={{
               width: `${segment.widthPercentage}%`,
               left: `${segment.startPercentage}%`,
-              position: 'absolute',
+              position: "absolute",
             }}
           />
         ))}
-        <div className="video-cursor" style={{ left: `${cursorPosition}%` }}></div>
+        <div
+          className="video-cursor"
+          style={{ left: `${cursorPosition}%` }}
+        ></div>
       </div>
       <div className="scale-marker-container">
         {scaleMarkers.map((marker, index) => (
-          <div key={index} className="scale-marker" style={{ left: `${marker.position}%` }}>
+          <div
+            key={index}
+            className="scale-marker"
+            style={{ left: `${marker.position}%` }}
+          >
             <div className="scale-line"></div>
             <span className="scale-time">{formatTime(marker.time)}</span>
           </div>
@@ -129,11 +147,6 @@ const FidelityScore = ({videoDuration, currentTime }) => {
       </div>
     </div>
   );
-};
-
-const formatTime = (seconds) => {
-  const minutes = Math.floor(seconds / 60);
-  return `${minutes}`;
 };
 
 export default FidelityScore;

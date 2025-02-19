@@ -1,37 +1,54 @@
-// HomePage.jsx
-import React, { useState } from 'react';
-import ChatInterface from './Components/ChatInterface';
-import MyProgress from './Components/MyProgress';
-import VideoUpload from './Components/VideoUpload';
-import FidelityScore from './Components/FidelityScore';
-import TranscriptionWindow from './Components/TranscriptionWindow';
-import ProcessDiagram from './Components/ProcessDiagram';
-import './HomePage.css';
+import React, { useState, useEffect } from "react";
+import ChatInterface from "./Components/ChatInterface";
+import MyProgress from "./Components/MyProgress";
+import VideoUpload from "./Components/VideoUpload";
+import FidelityScore from "./Components/FidelityScore";
+import TranscriptionWindow from "./Components/TranscriptionWindow";
+import ProcessDiagram from "./Components/ProcessDiagram";
+import AIAnalysis from "./Components/AIAnalysis";
+import HighlightsTimeline from "./Components/HighlightsTimeline";
+import { io } from "socket.io-client";
+import "./HomePage.css";
+
+const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const HomePage = () => {
-  // States for video handling:
   const [videoTime, setVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
   const [videoId, setVideoId] = useState(null);
+  const [analysisResults, setAnalysisResults] = useState([]);
 
-  // Handler when video time updates
   const handleVideoTimeUpdate = (time, duration) => {
     setVideoTime(time);
     setVideoDuration(duration);
   };
 
-  // Seek the <video> to a specific time
   const seekToTime = (time) => {
-    const video = document.querySelector('video');
+    const video = document.querySelector("video");
     if (video) {
       video.currentTime = time;
     }
   };
 
+  useEffect(() => {
+    if (!videoId) return;
+
+    const socket = io(REACT_APP_API_BASE_URL);
+
+    socket.on("analysis_progress", (data) => {
+      console.log("Received real-time analysis:", data);
+      setAnalysisResults((prevResults) => [...prevResults, data]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [videoId]);
+
   return (
     <div className="homepage-container">
-      {/* 1) Top: Chat + MyProgress side by side */}
+      {}
       <div className="top-section">
         <div className="top-left">
           <ChatInterface
@@ -40,6 +57,7 @@ const HomePage = () => {
             newVideoUploaded={newVideoUploaded}
             setNewVideoUploaded={setNewVideoUploaded}
             seekToTime={seekToTime}
+            videoId={videoId}
           />
         </div>
         <div className="top-right">
@@ -47,7 +65,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* 2) Bottom: Video + Diagram */}
+      {}
       <div className="bottom-container">
         <div className="bottom-left">
           <VideoUpload
@@ -58,8 +76,27 @@ const HomePage = () => {
             videoDuration={videoDuration}
             seekToTime={seekToTime}
           />
+          {videoId && analysisResults.length > 0 && (
+            <HighlightsTimeline
+              videoId={videoId}
+              videoDuration={videoDuration}
+              seekToTime={seekToTime}
+              analysisResults={analysisResults}
+            />
+          )}
+          {videoId && (
+            <AIAnalysis
+              analysisResults={analysisResults}
+              videoId={videoId}
+              seekToTime={seekToTime}
+            />
+          )}
           <TranscriptionWindow videoId={videoId} videoTime={videoTime} />
-          <FidelityScore videoDuration={videoDuration} currentTime={videoTime} />
+          <FidelityScore
+            analysisResults={analysisResults}
+            videoDuration={videoDuration}
+            currentTime={videoTime}
+          />
         </div>
         <div className="bottom-right">
           <ProcessDiagram videoTime={videoTime} />

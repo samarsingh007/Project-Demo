@@ -1,34 +1,47 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './CSS/VideoUpload.css';
-import ChooseIcon from '../../../Assets/Choose.svg';
-import'./HighlightsTimeline.js';
-import HighlightsTimeline from './HighlightsTimeline.js';
+import React, { useState, useEffect, useRef } from "react";
+import "./CSS/VideoUpload.css";
+import ChooseIcon from "../../../Assets/Choose.svg";
+import "./HighlightsTimeline.js";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded, setVideoId, videoId, videoDuration, seekToTime  }) => {
+const VideoUpload = ({
+  onVideoTimeUpdate,
+  setNewVideoUploaded,
+  setVideoId,
+  videoId,
+  videoDuration,
+  seekToTime,
+}) => {
   const [video, setVideo] = useState(null);
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const handleVideoUpload = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('video', file);
+    if (!file) return;
 
-      const response = await fetch(`${REACT_APP_API_BASE_URL}/upload`, {
-        method: 'POST',
-        body: formData,
+    const previewURL = URL.createObjectURL(file);
+    setVideo(previewURL);
+
+    const formData = new FormData();
+    formData.append("video", file);
+
+    fetch(`${REACT_APP_API_BASE_URL}/upload`, {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          setNewVideoUploaded(true);
+          setVideoId(data.videoId);
+          console.log("Video is being processed in the background.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error uploading video for processing:", error);
       });
-      const data = await response.json();
-
-      if (data.success) {
-        setVideo(data.videoUrl);
-        setNewVideoUploaded(true);
-        setVideoId(data.videoId);
-      }
-    }
   };
 
   const handleTimeUpdate = () => {
@@ -36,6 +49,13 @@ const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded, setVideoId, video
       const currentTime = videoRef.current.currentTime;
       const duration = videoRef.current.duration;
       onVideoTimeUpdate(currentTime, duration);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      const duration = videoRef.current.duration;
+      onVideoTimeUpdate(0, duration);
     }
   };
 
@@ -54,7 +74,6 @@ const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded, setVideoId, video
 
   return (
     <div className="training-video-container">
-      {/* Header row: orange dot, “Training Video,” + button */}
       <div className="training-video-header">
         <div className="title-with-dot">
           <span className="orange-dot" />
@@ -70,54 +89,36 @@ const VideoUpload = ({ onVideoTimeUpdate, setNewVideoUploaded, setVideoId, video
         </button>
       </div>
 
-      {/* Orange divider */}
       <div className="orange-divider" />
 
-      {/* Clickable video area */}
       <div
         className="video-area"
         onClick={() => {
-          // Only trigger upload dialog if there's no video yet
           if (!video) {
             handleChooseClick();
           }
         }}
       >
-        {/* If no video: show placeholder & hidden file input */}
         {!video && <div className="video-placeholder">Choose Video</div>}
         <input
           ref={fileInputRef}
           type="file"
           accept="video/*"
           onChange={handleVideoUpload}
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
         />
 
-        {/* If there's a video: show it */}
         {video && (
           <video
             ref={videoRef}
             width="100%"
             controls
+            onLoadedMetadata={handleLoadedMetadata}
             onTimeUpdate={handleTimeUpdate}
           >
             Your browser does not support the video tag.
           </video>
         )}
-      </div>
-      {video && videoId && videoDuration > 0 && (
-        <div>
-          <HighlightsTimeline
-            videoId={videoId}
-            videoDuration={videoDuration}
-            seekToTime={seekToTime}
-          />
-        </div>
-      )}
-      {/* AI Analysis results */}
-      <div className="ai-analysis-section">
-        <h3>AI Analysis results</h3>
-        {/* Insert AI output here */}
       </div>
     </div>
   );

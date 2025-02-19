@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './CSS/ProcessDiagram.css';
-import ChooseIcon from '../../../Assets/Choose2.svg';
-import DiagramSvg from '../../../Assets/diagram.svg'; // <-- import the local SVG as an image
+import React, { useState, useEffect, useRef } from "react";
+import "./CSS/ProcessDiagram.css";
+import ChooseIcon from "../../../Assets/Choose2.svg";
+import DiagramSvg from "../../../Assets/diagram.svg";
 
 const ProcessDiagram = ({ videoTime }) => {
-  const [highlightPosition, setHighlightPosition] = useState({ top: '6%', left: '40%' });
+  const [highlightPosition, setHighlightPosition] = useState({
+    top: "6%",
+    left: "40%",
+  });
   const [currentStep, setCurrentStep] = useState(null);
   const [isStepCorrect, setIsStepCorrect] = useState(null);
   const [stepsTimeline, setStepsTimeline] = useState([]);
@@ -16,14 +19,16 @@ const ProcessDiagram = ({ videoTime }) => {
   useEffect(() => {
     const fetchStepsTimeline = async () => {
       try {
-        const response = await fetch(`${REACT_APP_API_BASE_URL}/api/steps-timeline`);
+        const response = await fetch(
+          `${REACT_APP_API_BASE_URL}/api/steps-timeline`
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch steps timeline');
+          throw new Error("Failed to fetch steps timeline");
         }
         const data = await response.json();
         setStepsTimeline(data);
       } catch (error) {
-        console.error('Error fetching steps timeline:', error);
+        console.error("Error fetching steps timeline:", error);
       }
     };
     fetchStepsTimeline();
@@ -32,22 +37,25 @@ const ProcessDiagram = ({ videoTime }) => {
   useEffect(() => {
     const fetchRelativePositions = async () => {
       try {
-        const response = await fetch(`${REACT_APP_API_BASE_URL}/api/relative-positions`);
+        const response = await fetch(
+          `${REACT_APP_API_BASE_URL}/api/relative-positions`
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch relative positions');
+          throw new Error("Failed to fetch relative positions");
         }
         const data = await response.json();
         setRelativePositions(data);
       } catch (error) {
-        console.error('Error fetching relative positions:', error);
+        console.error("Error fetching relative positions:", error);
       }
     };
     fetchRelativePositions();
   }, [REACT_APP_API_BASE_URL]);
 
-
   useEffect(() => {
-    const lastStepInTime = stepsTimeline.filter((step) => step.timestamp <= videoTime).pop();
+    const lastStepInTime = stepsTimeline
+      .filter((step) => step.timestamp <= videoTime)
+      .pop();
     if (lastStepInTime) {
       setCurrentStep(lastStepInTime.step);
       setIsStepCorrect(lastStepInTime.isCorrect);
@@ -59,7 +67,10 @@ const ProcessDiagram = ({ videoTime }) => {
 
   useEffect(() => {
     if (!currentStep) return;
-    const stepPosition = relativePositions[currentStep] || { top: '6%', left: '40%' };
+    const stepPosition = relativePositions[currentStep] || {
+      top: "6%",
+      left: "40%",
+    };
     setHighlightPosition(stepPosition);
   }, [currentStep, relativePositions]);
 
@@ -71,21 +82,25 @@ const ProcessDiagram = ({ videoTime }) => {
 
   return (
     <div className="process-diagram-container">
-      {/* Header row: purple dot, “Process Diagram,” + choose button */}
+      {}
       <div className="process-diagram-header">
         <div className="title-with-dot">
           <span className="purple-dot" />
           <h2>Process Diagram</h2>
         </div>
         <button className="choose-button" onClick={handleChooseClick}>
-          <img src={ChooseIcon} alt="Choose Icon" className="choose-button-icon" />
+          <img
+            src={ChooseIcon}
+            alt="Choose Icon"
+            className="choose-button-icon"
+          />
           Choose
         </button>
       </div>
 
       <div className="purple-divider" />
 
-      {/* The main diagram area: we simply show the local SVG here */}
+      {}
       <div className="process-illustration-container">
         <div className="image-wrapper">
           <img
@@ -93,10 +108,12 @@ const ProcessDiagram = ({ videoTime }) => {
             alt="Process Diagram"
             className="process-diagram"
           />
-          {/* The highlight circle if we have a currentStep */}
+          {}
           {currentStep !== null && (
             <div
-              className={`pulsating-circle ${isStepCorrect ? 'correct' : 'error'}`}
+              className={`pulsating-circle ${
+                isStepCorrect ? "correct" : "error"
+              }`}
               style={{
                 top: highlightPosition.top,
                 left: highlightPosition.left,
@@ -106,13 +123,12 @@ const ProcessDiagram = ({ videoTime }) => {
         </div>
       </div>
 
-      {/* Hidden file input (if you want "Choose" to do something) */}
+      {}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/svg+xml"
-        style={{ display: 'none' }}
-        // onChange={ ...some logic... }
+        style={{ display: "none" }}
       />
     </div>
   );

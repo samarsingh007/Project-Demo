@@ -33,7 +33,8 @@
   background-color: rgb(255, 234, 0);
 }
 
-.fidelity-score-4, .fidelity-score-green {
+.fidelity-score-4,
+.fidelity-score-green {
   background-color: #008b20;
 }
 

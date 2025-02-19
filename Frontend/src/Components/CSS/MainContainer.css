@@ -1,12 +1,11 @@
-/* MainContainer.css */
 .main-wrapper {
   display: flex;
-  overflow: hidden; /* so the sidebar + content are on one row */
+  overflow: hidden;
 }
 
 .content-container {
   display: flex;
-  flex:1;
+  flex: 1;
   padding-left: 25px;
   flex-direction: column;
   overflow: hidden;

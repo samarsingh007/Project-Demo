@@ -1,84 +1,72 @@
-/* Container for the entire top bar */
 .topbar-container {
-    display: flex;
-    align-items: center;
-    justify-content: right;
-    gap: 40px;
-    height: 75px;
-    font-family: sans-serif;
-  }
-  
-  /* Middle section for question & bell icons */
-  .notification-section {
-    display: flex;
-    align-items: center;
-    gap: 20px;   /* space between icons */
-  }
-  
-  /* Right section for user info & avatar */
-  .profile-section {
-    display: flex;
-    align-items: center;
-  }
-  
-  /* Container for individual icons */
-  .icon-container {
-    position: relative;
-  }
-  
-  /* The icons themselves */
-  .topbar-icon {
-    width: 25px;
-    height: 25px;
-    cursor: pointer;
-  }
-  
-  /* Pink dot on the bell icon if you have new notifications */
-  .notification-dot {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 8px;
-    height: 8px;
-    background-color: #ff3366; /* pink/red color */
-    border-radius: 50%;
-    box-shadow: 0 0 2px rgba(0,0,0,0.3);
-  }
-  
-  /* user info: name + location stacked vertically */
-  .user-info {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-    margin-right: 20px;
-  }
-  
-  /* Name text styling */
-  .user-name {
-    font-weight: 500;
-    color: #333;
-  }
-  
-  /* Smaller location text under the name */
-  .user-location {
-    font-size: 0.85rem;
-    color: #888;
-  }
-  
-  /* Circle avatar on the right */
-  .user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    cursor: pointer;
-  }
-  
-  /* If you want a dropdown arrow next to the avatar */
-  .arrow-down {
-    width: 20px;
-    height: 20px;
-    margin-left: 10px;
-    cursor: pointer;
-  }
-  
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: 40px;
+  height: 75px;
+  font-family: sans-serif;
+}
+
+.notification-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+}
+
+.icon-container {
+  position: relative;
+}
+
+.topbar-icon {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+}
+
+.notification-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff3366;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  margin-right: 20px;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.user-location {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.arrow-down {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+}

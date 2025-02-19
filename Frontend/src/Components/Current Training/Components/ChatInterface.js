@@ -1,49 +1,47 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import './CSS/ChatInterface.css';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import "./CSS/ChatInterface.css";
 
-/** Imports for images/icons */
-import BotLogo from '../../../Assets/main-logo.svg'; 
-import VoiceIcon from '../../../Assets/voice.svg';
+import BotLogo from "../../../Assets/main-logo.svg";
+import VoiceIcon from "../../../Assets/voice.svg";
 
-const ChatInterface = ({ 
-  videoTime, 
-  videoDuration, 
-  newVideoUploaded, 
-  setNewVideoUploaded, 
-  seekToTime 
+const ChatInterface = ({
+  videoTime,
+  videoDuration,
+  newVideoUploaded,
+  setNewVideoUploaded,
+  seekToTime,
+  videoId,
 }) => {
   const [messages, setMessages] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
-  const [currentMessage, setCurrentMessage] = useState('');
+  const [currentMessage, setCurrentMessage] = useState("");
   const [expandedMessages, setExpandedMessages] = useState({});
   const [context, setContext] = useState();
   const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
   const [messageQueue, setMessageQueue] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
-  
+
   const processedMessages = useRef(new Set());
   const chatBoxRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
   const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-  const [parentName, setParentName] = useState('');
-  const [childName, setChildName] = useState('');
+  const [parentName, setParentName] = useState("");
+  const [childName, setChildName] = useState("");
 
-  /** Fetch logic & effects omitted for brevity; keep the same logic as before **/
   const fetchMessages = useCallback(async () => {
     if (!context) return;
-    if (context === 'askParentName' || context === 'askChildName') return;
+    if (context === "askParentName" || context === "askChildName") return;
 
     try {
       const response = await fetch(
-        `${REACT_APP_API_BASE_URL}/api/chat/${context}?videoTime=${videoTime || 0}`
+        `${REACT_APP_API_BASE_URL}/api/chat/${context}`
       );
       if (!response.ok) {
-        throw new Error('Failed to fetch messages');
+        throw new Error("Failed to fetch messages");
       }
       let data = await response.json();
 
-      // Replace placeholders with parent/child names
       if (parentName && childName) {
         data = data.map((msg) => {
           let newText = msg.text;
@@ -54,20 +52,23 @@ const ChatInterface = ({
       }
       setMessages(data);
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error("Error fetching messages:", error);
     }
-  }, [context, videoTime, REACT_APP_API_BASE_URL, parentName, childName]);
+  }, [context, REACT_APP_API_BASE_URL, parentName, childName]);
 
-  useEffect(() => { fetchMessages(); }, [fetchMessages]);
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
 
   useEffect(() => {
     if (messages.length > 0) {
       const newMessages = messages.filter(
-        (msg) => !processedMessages.current.has(msg.text + (msg.timestamp || ''))
+        (msg) =>
+          !processedMessages.current.has(msg.text + (msg.timestamp || ""))
       );
 
       newMessages.forEach((msg) => {
-        processedMessages.current.add(msg.text + (msg.timestamp || ''));
+        processedMessages.current.add(msg.text + (msg.timestamp || ""));
       });
 
       setMessageQueue((prevQueue) => [...prevQueue, ...newMessages]);
@@ -96,7 +97,7 @@ const ChatInterface = ({
     if (newVideoUploaded) {
       const videoUploadMessage = {
         text: "A new video has been successfully uploaded.",
-        sender: 'bot',
+        sender: "bot",
       };
 
       if (!processedMessages.current.has(videoUploadMessage.text)) {
@@ -105,21 +106,20 @@ const ChatInterface = ({
       }
 
       setNewVideoUploaded(false);
-      setContext('askParentName');
+      setContext("askParentName");
       const askParentMsg = {
         text: "Please enter the parent's name:",
-        sender: 'bot'
+        sender: "bot",
       };
       setAllMessages((prev) => [...prev, askParentMsg]);
       setIsAwaitingResponse(true);
     }
   }, [newVideoUploaded, setNewVideoUploaded]);
 
-  /** Initial “hi” message effect **/
   useEffect(() => {
     const initialMessage = {
       text: "Hi, I'm a conversational assistant designed to help.",
-      sender: 'bot',
+      sender: "bot",
     };
     if (!processedMessages.current.has(initialMessage.text)) {
       processedMessages.current.add(initialMessage.text);
@@ -127,72 +127,106 @@ const ChatInterface = ({
     }
   }, []);
 
-  /** Handle context transitions based on video time **/
-  useEffect(() => {
-    if (context === 'introduction') {
-      // ...
-    } else if (context === 'selfReflection' && videoTime > 0) {
-      setContext('fidelity');
-    } else if (context === 'fidelity' && videoTime >= videoDuration - 1) {
-      setContext('problemSolvingDialogue');
-    } else if (context === 'problemSolvingDialogue' && videoTime >= videoDuration) {
-      setContext('jointPlanning');
-    }
-  }, [context, videoTime, videoDuration]);
-
-  /** Keep chat scrolled to bottom **/
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [allMessages, isTyping]);
 
-  /** If the bot is awaiting a “Yes” click for “introduction” context **/
   const handleYesClick = () => {
-    if (context === 'introduction' && isAwaitingResponse) {
+    if (context === "introduction" && isAwaitingResponse) {
       setIsAwaitingResponse(false);
-      setContext('selfReflection');
+      setContext("LLM");
+
+      const botReplyMsg = {
+        text: `First, let’s take a moment to reflect on today’s interaction with ${childName}. What do you think went well?`,
+        sender: "bot",
+      };
+
+      setAllMessages((prev) => [...prev, botReplyMsg]);
     }
   };
 
-  /** Send user message **/
-  const sendMessage = () => {
-    if (currentMessage.trim() !== '') {
+  const sendMessage = async () => {
+    const userInput = currentMessage.trim();
+
+    if (userInput !== "") {
       const userMessage = {
-        text: currentMessage,
-        sender: 'user',
+        text: userInput,
+        sender: "user",
       };
 
       setAllMessages((prevMessages) => [...prevMessages, userMessage]);
-      setCurrentMessage('');
+      setCurrentMessage("");
       if (isAwaitingResponse) {
         setIsAwaitingResponse(false);
       }
 
-      if (context === 'askParentName') {
-        setParentName(userMessage.text.trim());
-        const askChildMsg = {
-          text: "Please enter the child's name:",
-          sender: 'bot'
-        };
-        setAllMessages((prev) => [...prev, askChildMsg]);
-        setContext('askChildName');
-        setIsAwaitingResponse(true);
-      } else if (context === 'askChildName') {
-        setChildName(userMessage.text.trim());
-        setContext('introduction');
+      if (context === "askParentName") {
+        setParentName(userInput);
+        setIsTyping(true);
+        setTimeout(() => {
+          setAllMessages((prev) => [
+            ...prev,
+            { text: "Please enter the child's name:", sender: "bot" },
+          ]);
+          setIsTyping(false);
+          setContext("askChildName");
+          setIsAwaitingResponse(true);
+        }, 1000);
+      } else if (context === "askChildName") {
+        setChildName(userInput);
+        setContext("introduction");
+      } else if (context === "LLM") {
+        try {
+          setIsTyping(true);
+
+          const conversationHistory = allMessages.map((msg) => ({
+            role: msg.sender === "bot" ? "assistant" : "user",
+            content: msg.text,
+          }));
+
+          conversationHistory.push({ role: "user", content: userInput });
+
+          const response = await fetch(
+            `${REACT_APP_API_BASE_URL}/api/ai-chat`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                videoId,
+                conversationHistory,
+                context,
+                parentName,
+                childName,
+              }),
+            }
+          );
+
+          const data = await response.json();
+          setIsTyping(false);
+          if (data.botReply) {
+            setAllMessages((prev) => [
+              ...prev,
+              { text: data.botReply, sender: "bot" },
+            ]);
+          }
+        } catch (error) {
+          console.error("Error calling /api/ai-chat:", error);
+          setIsTyping(false);
+        }
       }
     }
   };
 
-  /** Format a timestamp (seconds) into mm:ss **/
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+    const secs = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, "0");
     return `${minutes}:${secs}`;
   };
 
-  /** Expand/collapse long messages **/
   const toggleExpandMessage = (index) => {
     setExpandedMessages((prev) => ({
       ...prev,
@@ -205,14 +239,14 @@ const ChatInterface = ({
       <div className="chat-box" ref={chatBoxRef}>
         {allMessages.map((msg, index) => (
           <div key={index} className={`chat-message ${msg.sender} fade-in`}>
-            {/* If this is a bot message, show bot avatar at the left */}
-            {msg.sender === 'bot' && (
+            {}
+            {msg.sender === "bot" && (
               <img src={BotLogo} alt="Bot" className="bot-avatar" />
             )}
 
             <div className="message-content">
-              {/* Timestamp button if the bot message has a timestamp */}
-              {msg.sender === 'bot' && msg.timestamp && (
+              {}
+              {msg.sender === "bot" && msg.timestamp && (
                 <span className="message-timestamp">
                   [
                   <button onClick={() => seekToTime(msg.timestamp)}>
@@ -222,11 +256,11 @@ const ChatInterface = ({
                 </span>
               )}
 
-              {/* The main text: could be truncated or full */}
+              {}
               <span className="message-text">
                 {msg.text.length > 210 && !expandedMessages[index] ? (
                   <>
-                    {msg.text.substring(0, 210)}...{' '}
+                    {msg.text.substring(0, 210)}...{" "}
                     <button
                       className="toggle-expand-btn"
                       onClick={() => toggleExpandMessage(index)}
@@ -236,7 +270,7 @@ const ChatInterface = ({
                   </>
                 ) : msg.text.length > 210 && expandedMessages[index] ? (
                   <>
-                    {msg.text}{' '}
+                    {msg.text}{" "}
                     <button
                       className="toggle-expand-btn"
                       onClick={() => toggleExpandMessage(index)}
@@ -249,17 +283,19 @@ const ChatInterface = ({
                 )}
               </span>
 
-              {/* "Yes" button if awaiting a response in introduction */}
-              {msg.awaitResponse && context === 'introduction' && isAwaitingResponse && (
-                <button className="response-buttons" onClick={handleYesClick}>
-                  Yes
-                </button>
-              )}
+              {}
+              {msg.awaitResponse &&
+                context === "introduction" &&
+                isAwaitingResponse && (
+                  <button className="response-buttons" onClick={handleYesClick}>
+                    Yes
+                  </button>
+                )}
             </div>
           </div>
         ))}
 
-        {/* The typing indicator if the bot is "thinking" */}
+        {}
         {isTyping && !isAwaitingResponse && (
           <div className="typing-indicator">
             <img src={BotLogo} alt="Bot" className="typing-bot-avatar" />
@@ -270,7 +306,7 @@ const ChatInterface = ({
         )}
       </div>
 
-      {/* Input row */}
+      {}
       <div className="input-container">
         <input
           type="text"
@@ -278,18 +314,18 @@ const ChatInterface = ({
           value={currentMessage}
           onChange={(e) => setCurrentMessage(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === "Enter") {
               sendMessage();
             }
           }}
         />
 
-        {/* "Send" button */}
+        {}
         <button className="send-button" onClick={sendMessage}>
           Send
         </button>
 
-        {/* "Voice" button using your imported voice icon */}
+        {}
         <button className="voice-button">
           <img src={VoiceIcon} alt="Voice" className="voice-icon" />
         </button>

@@ -1,11 +1,9 @@
-/* 1. Container (entire component): light grey background */
 .process-diagram-container {
   font-family: sans-serif;
   border-radius: 15px;
   padding: 0 25px 25px;
 }
 
-/* 2. Header row */
 .process-diagram-header {
   display: flex;
   justify-content: space-between;
@@ -14,23 +12,20 @@
   border-radius: 5px 5px 0 0;
 }
 
-/* Orange dot and title side-by-side */
 .title-with-dot {
   display: flex;
   align-items: center;
 }
 
-/* The dot next to "Training Video" */
 .purple-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
-  background-color: #5030E5;
+  background-color: #5030e5;
   border-radius: 50%;
   margin-right: 8px;
 }
 
-/* Title text */
 .process-diagram-header h2 {
   margin: 0;
   font-size: 1rem;
@@ -42,11 +37,10 @@
   height: 22px;
 }
 
-/* "Choose" button at the top-right */
 .choose-button {
-  display: flex;           /* place icon & text side-by-side */
+  display: flex;
   align-items: center;
-  gap: 6px;                /* small spacing between icon and text */
+  gap: 6px;
   background-color: transparent;
   border: none;
   font-size: 1rem;
@@ -56,10 +50,9 @@
   padding: 4px 8px;
 }
 
-/* 3. Thin orange divider under the header */
 .purple-divider {
   height: 3px;
-  background-color: #5030E5;
+  background-color: #5030e5;
   border-radius: 1px;
 }
 
@@ -81,7 +74,7 @@
 
 .pulsating-circle {
   position: absolute;
-  width: 50%; 
+  width: 50%;
   height: 15%;
   border-radius: 10px;
   background-color: transparent;

@@ -1,0 +1,97 @@
+.ai-analysis-section {
+  margin: 16px 0;
+  padding: 0 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.ai-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ai-header h3 {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.overall-score {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.ai-table-container {
+  max-height: 300px;
+  overflow: auto;
+  transition: max-height 0.5s ease-in-out, height 0.5s ease-in-out;
+}
+
+.ai-analysis-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.ai-analysis-table th {
+  text-align: left;
+  padding: 8px;
+  color: #333;
+}
+
+.ai-analysis-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.timestamp-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.timestamp-button:hover {
+  color: #0056b3;
+}
+
+.ai-table-container::-webkit-scrollbar {
+  width: 5px;
+  background: transparent;
+}
+.ai-table-container::-webkit-scrollbar-track {
+  background: linear-gradient(to bottom, #ccc 0%, #d6caff 50%);
+  border-radius: 6px;
+  margin: 15px 0;
+}
+.ai-table-container::-webkit-scrollbar-thumb {
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+.ai-table-container::-webkit-scrollbar-thumb:hover {
+  background-color: #f5f5f5;
+}
+.ai-table-container::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

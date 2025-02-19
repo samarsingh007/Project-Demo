@@ -36,7 +36,7 @@ USE_MIN_SEC_FORMAT = True
 # trigger words for segmentation
 TRIGGER_WORDS = ["Can", "What", "Where"]
 
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "OPENAI_API_KEY"
 
 Rev_API_key = "Your_API_Key"
 

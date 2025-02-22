@@ -130,7 +130,8 @@ app.post("/api/ai-chat", async (req, res) => {
        - Ask: "What do you think could have been done differently?"
        - After two responses, summarize their answers, then move to the next step.
   
-    2️ Fidelity Feedback Phase
+    2️ Feedback Phase
+       - If the analysis data is not yet available, explicilty say that you're currenlty analyzing the video.
        - Summarize key takeaways from the analysis data.
        - Highlight areas of improvement based on fidelity scores.
        - Move to the next phase after explaining the insights.

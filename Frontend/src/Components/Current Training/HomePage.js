@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ChatInterface from "./Components/ChatInterface";
 import MyProgress from "./Components/MyProgress";
 import VideoUpload from "./Components/VideoUpload";
-import FidelityScore from "./Components/FidelityScore";
+// import FidelityScore from "./Components/FidelityScore";
 import TranscriptionWindow from "./Components/TranscriptionWindow";
 import ProcessDiagram from "./Components/ProcessDiagram";
 import AIAnalysis from "./Components/AIAnalysis";
@@ -64,8 +64,6 @@ const HomePage = () => {
           <MyProgress />
         </div>
       </div>
-
-      {}
       <div className="bottom-container">
         <div className="bottom-left">
           <VideoUpload
@@ -92,11 +90,11 @@ const HomePage = () => {
             />
           )}
           <TranscriptionWindow videoId={videoId} videoTime={videoTime} />
-          <FidelityScore
+          {/* <FidelityScore
             analysisResults={analysisResults}
             videoDuration={videoDuration}
             currentTime={videoTime}
-          />
+          /> */}
         </div>
         <div className="bottom-right">
           <ProcessDiagram videoTime={videoTime} />

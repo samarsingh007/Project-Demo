@@ -60,11 +60,12 @@
 .video-area {
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 400px;
+  min-height: 400px;
+  height: auto;
   margin: 16px 0 16px 0;
-  background: rgba(0, 0, 0, 0.023);
   border-radius: 10px;
 }
 
@@ -106,10 +107,47 @@
 }
 
 video {
-  width: auto;
-  height: 100%;
+  max-height: 550px;
   border: none;
   border-radius: 5px;
   outline: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.upload-progress {
+  width: 80%;
+  padding: 10px 0 0;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.progress-bar {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  background-color: #e0e0e0;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #a7a9edaa;
+  transition: width 0.3s ease;
+  border-radius: 15px;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #333;
+  font-size: 20px;
+  font-weight: bold;
+  white-space: nowrap;
+  pointer-events: none;
 }

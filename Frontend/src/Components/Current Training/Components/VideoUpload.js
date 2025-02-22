@@ -16,6 +16,8 @@ const VideoUpload = ({
   const [video, setVideo] = useState(null);
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleVideoUpload = async (event) => {
     const file = event.target.files[0];
@@ -27,21 +29,42 @@ const VideoUpload = ({
     const formData = new FormData();
     formData.append("video", file);
 
-    fetch(`${REACT_APP_API_BASE_URL}/upload`, {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${REACT_APP_API_BASE_URL}/upload`, true);
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const progress = Math.round((e.loaded / e.total) * 100);
+          setUploadProgress(progress);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
           setNewVideoUploaded(true);
           setVideoId(data.videoId);
-          console.log("Video is being processed in the background.");
+          console.log("Video successfully uploaded.");
+        } else {
+          console.error("Failed to upload video.");
         }
-      })
-      .catch((error) => {
-        console.error("Error uploading video for processing:", error);
-      });
+        setIsUploading(false);
+      };
+
+      xhr.onerror = () => {
+        console.error("Error during video upload.");
+        setIsUploading(false);
+      };
+
+      xhr.send(formData);
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      setIsUploading(false);
+    }
   };
 
   const handleTimeUpdate = () => {
@@ -118,6 +141,19 @@ const VideoUpload = ({
           >
             Your browser does not support the video tag.
           </video>
+        )}
+        {isUploading && (
+          <div className="upload-progress">
+            <div className="progress-bar">
+              <span className="progress-text">
+                Uploading Video... {uploadProgress}%
+              </span>
+              <div
+                className="progress-fill"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+          </div>
         )}
       </div>
     </div>

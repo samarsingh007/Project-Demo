@@ -23,6 +23,7 @@ const TRANSCRIPTION_HOST = process.env.TRANSCRIPTION_HOST;
 const TRANSCRIPTION_PORT = process.env.TRANSCRIPTION_PORT;
 const FRONTEND_URL = `http://${HOST}:${FRONTEND_PORT}`;
 const TRANSCRIPTION_URL = `http://${TRANSCRIPTION_HOST}:${TRANSCRIPTION_PORT}`;
+const pythonPath = process.env.PYTHON_PATH;
 
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(cors());
@@ -55,7 +56,7 @@ const chatMessages = {
 
 function analyzeVideoPython(videoId, videoPath, outputCsvPath, socket) {
   return new Promise((resolve, reject) => {
-    const pythonProcess = spawn("python", [
+    const pythonProcess = spawn(pythonPath, [
       path.join(__dirname, "../AI4BeAgent/super_SLP.py"),
       videoId,
       videoPath,
@@ -146,6 +147,7 @@ app.post("/api/ai-chat", async (req, res) => {
        - Offer practical tips and ensure the conversation ends with encouragement.
   
      **Important Rules**
+    - Limit each feedback to 75 Words.
     - Answer user questions at any time, but **always return to the structured coaching flow**.
     - If a user does not respond meaningfully, gently **guide them forward** without repeating questions too often.
     - If a user explicitly says they want to move forward, **do so immediately**.

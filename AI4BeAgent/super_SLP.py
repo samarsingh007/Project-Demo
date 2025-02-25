@@ -11,6 +11,9 @@ from video_agent import describe_video
 import constants
 import time
 import re
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # --- Setup Logging ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,8 +22,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 openai.api_key = constants.OPENAI_API_KEY
 
 # --- Initialize WebSocket Client ---
+socket_server_url = os.getenv('SOCKET_SERVER_URL')
 sio = socketio.Client()
-sio.connect('http://localhost:5000')  # Ensure this matches your backend WebSocket server
+sio.connect(socket_server_url)
 
 # --- Function to Remove Temporary Files ---
 def clean_temp_files(file_paths):

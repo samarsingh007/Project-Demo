@@ -1,4 +1,7 @@
 # constants.py
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 # Path to the folder containing video files
 VIDEO_FOLDER_PATH = "videos/"
@@ -36,7 +39,7 @@ USE_MIN_SEC_FORMAT = True
 # trigger words for segmentation
 TRIGGER_WORDS = ["Can", "What", "Where"]
 
-OPENAI_API_KEY = OPENAI_API_KEY
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 Rev_API_key = "Your_API_Key"
 

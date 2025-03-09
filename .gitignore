@@ -4,8 +4,10 @@
 /Frontend/node_modules
 /Backend/node_modules
 /Backend/.env
+/Backend/backend.log
 /Frontend/.env
-/Transcription/__pycache__
+/Frontend/build
+/Frontend/frontend.log
 /.pnp
 .pnp.js
 

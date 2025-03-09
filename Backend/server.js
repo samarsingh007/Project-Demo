@@ -18,16 +18,37 @@ const io = socketIo(server, { cors: { origin: "*" } });
 require("dotenv").config();
 const HOST = process.env.HOST;
 const PORT = process.env.PORT;
-const FRONTEND_PORT = process.env.FRONTEND_PORT;
-const TRANSCRIPTION_HOST = process.env.TRANSCRIPTION_HOST;
-const TRANSCRIPTION_PORT = process.env.TRANSCRIPTION_PORT;
-const FRONTEND_URL = `http://${HOST}:${FRONTEND_PORT}`;
-const TRANSCRIPTION_URL = `http://${TRANSCRIPTION_HOST}:${TRANSCRIPTION_PORT}`;
 const pythonPath = process.env.PYTHON_PATH;
+const allowedOrigins = ["https://ai4behavior.xlabub.com","https://backend_ai4behavior.xlabub.com"]; 
 
-app.use(cors({ origin: FRONTEND_URL }));
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+      } else {
+          callback(new Error('Not allowed by CORS'));
+      }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
+// ✅ Handle preflight requests manually
+// Automatically handle preflight requests
+app.options('*', cors()
+
+);
+app.use(express.urlencoded({ extended: true, limit: '500mb' }));
+app.use(express.json({ limit: '50mb' }));
+// Debug Middleware to log incoming requests
+app.use((req, res, next) => {
+    console.log(`Received ${req.method} request to ${req.url}`);
+    console.log('Request Headers:', req.headers);
+    console.log('Request Body:', req.body);
+    next();
+});
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
@@ -202,7 +223,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
   try {
     const videoPath = req.file.path;
     const videoId = uuidv4();
-    const videoUrl = `http://${HOST}:${PORT}/uploads/${req.file.filename}`;
+    const videoUrl = `${HOST}:${PORT}/uploads/${req.file.filename}`;
     const outputCsv = `uploads/${videoId}.csv`;
 
     transcriptionStore.set(videoId, {
@@ -290,7 +311,7 @@ app.post("/api/upload-image", upload.single("image"), (req, res) => {
     return res.status(400).json({ error: "No image file uploaded" });
   }
 
-  const imageUrl = `http://${HOST}:${PORT}/uploads/${req.file.filename}`;
+  const imageUrl = `${HOST}:${PORT}/uploads/${req.file.filename}`;
   res.json({ success: true, imageUrl });
 });
 
@@ -390,5 +411,5 @@ io.on("connection", (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server is running on http://${HOST}:${PORT}`);
+  console.log(`Server is running on ${HOST}:${PORT}`);
 });

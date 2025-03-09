@@ -18,6 +18,7 @@ const HomePage = () => {
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
   const [videoId, setVideoId] = useState(null);
   const [analysisResults, setAnalysisResults] = useState([]);
+  const [showTranscription, setShowTranscription] = useState(false);
 
   const handleVideoTimeUpdate = (time, duration) => {
     setVideoTime(time);
@@ -46,6 +47,10 @@ const HomePage = () => {
     };
   }, [videoId]);
 
+  const handleTranscriptionToggle = () => {
+    setShowTranscription((prev) => !prev);
+  };
+
   return (
     <div className="homepage-container">
       {}
@@ -73,6 +78,7 @@ const HomePage = () => {
             videoId={videoId}
             videoDuration={videoDuration}
             seekToTime={seekToTime}
+            handleTranscription={handleTranscriptionToggle}
           />
           {videoId && analysisResults.length > 0 && (
             <HighlightsTimeline
@@ -82,6 +88,15 @@ const HomePage = () => {
               analysisResults={analysisResults}
             />
           )}
+          <div className={`transcription-container ${showTranscription ? "visible" : ""}`}>
+            {showTranscription && (
+            <TranscriptionWindow
+              videoId={videoId}
+              videoTime={videoTime}
+              seekToTime={seekToTime}
+            />
+          )}
+          </div>
           {videoId && (
             <AIAnalysis
               analysisResults={analysisResults}
@@ -89,7 +104,6 @@ const HomePage = () => {
               seekToTime={seekToTime}
             />
           )}
-          <TranscriptionWindow videoId={videoId} videoTime={videoTime} />
           {/* <FidelityScore
             analysisResults={analysisResults}
             videoDuration={videoDuration}

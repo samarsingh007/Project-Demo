@@ -1,6 +1,7 @@
 .main-wrapper {
   display: flex;
   overflow: hidden;
+  margin: 0 25px 25px 0;
 }
 
 .content-container {

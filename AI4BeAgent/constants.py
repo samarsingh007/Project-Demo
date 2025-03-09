@@ -55,6 +55,7 @@ Award +1 point for each of the following:
 2. Establishing joint attention
 3. Waiting ~3 seconds for the child's response
 4. Providing verbal feedback that is NOT a simple “Yes/No” question
+5. Limit each feedback to 75 Words.
 
 Thus, the maximum possible fidelity score is 4.
 
@@ -79,6 +80,7 @@ Award **+1 point** for each of the following:
 2. Establishing **joint attention** with the child before/while prompting.
 3. **Waiting ~3 seconds** for the child’s response before continuing.
 4. Providing **verbal feedback** that is **not** a simple “Yes/No” question.
+5. Limit each feedback to 75 Words.
 
 Thus, the maximum possible fidelity score is **4**.
 
@@ -105,6 +107,7 @@ Award **+1 point** for each of the following:
 2. Establishing **joint attention** with the child
 3. Maintaining that expectant look for **5–7 seconds** before continuing
 4. Providing **verbal feedback** that is **not** a simple “Yes/No” question
+5. Limit each feedback to 75 Words.
 
 Thus, the maximum possible fidelity score is **4**.
 

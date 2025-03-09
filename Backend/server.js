@@ -8,6 +8,19 @@ const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
 const { spawn } = require("child_process");
+const { Pool } = require("pg");
+require("dotenv").config();
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // Required for Supabase
+});
+
+pool.connect()
+  .then(() => console.log("Connected to Supabase PostgreSQL ✅"))
+  .catch(err => console.error("Error connecting to database ❌", err));
+
+module.exports = pool;
 
 const http = require("http");
 const socketIo = require("socket.io");
@@ -15,7 +28,7 @@ const socketIo = require("socket.io");
 const server = http.createServer(app);
 const io = socketIo(server, { cors: { origin: "*" } });
 
-require("dotenv").config();
+
 const HOST = process.env.HOST;
 const PORT = process.env.PORT;
 const pythonPath = process.env.PYTHON_PATH;
@@ -153,22 +166,12 @@ app.post("/api/ai-chat", async (req, res) => {
        - After two responses, summarize their answers, then move to the next step.
   
     2️ Feedback Phase
-       - If the analysis data is not yet available, explicilty say that you're currenlty analyzing the video.
+       - If the analysis data is not yet available, say that you're currenlty analyzing the video and don't proceed further.
        - Summarize key takeaways from the analysis data.
        - Highlight areas of improvement based on fidelity scores.
        - Move to the next phase after explaining the insights.
   
-    3️ Problem-Solving Phase
-       - Ask if the user has any concerns or difficulties in implementing strategies.
-       - Provide targeted suggestions from the analysis data.
-       - Move forward after at least one response.
-  
-    4️ Joint Planning Phase
-       - Work with the user to plan improvements for the next session.
-       - Offer practical tips and ensure the conversation ends with encouragement.
-  
      **Important Rules**
-    - Limit each feedback to 75 Words.
     - Answer user questions at any time, but **always return to the structured coaching flow**.
     - If a user does not respond meaningfully, gently **guide them forward** without repeating questions too often.
     - If a user explicitly says they want to move forward, **do so immediately**.
@@ -277,7 +280,7 @@ app.get("/api/analysis/:videoId", (req, res) => {
 
 app.get("/api/transcriptions/:videoId", (req, res) => {
   const { videoId } = req.params;
-  const videoTime = parseFloat(req.query.videoTime);
+  const { videoTime, full } = req.query;
 
   if (!transcriptionStore.has(videoId)) {
     return res
@@ -289,6 +292,10 @@ app.get("/api/transcriptions/:videoId", (req, res) => {
 
   if (!transcriptions || transcriptions.length === 0) {
     return res.status(200).json({ status: "processing" });
+  }
+
+  if (full === "true") {
+    return res.json(transcriptions);
   }
 
   const convertToSeconds = (timeString) => {
@@ -372,6 +379,12 @@ io.on("connection", (socket) => {
       transcriptionStore.set(data.videoId, { transcriptions: [] });
     }
     transcriptionStore.get(data.videoId).transcriptions.push({
+      start: data.start,
+      end: data.end,
+      text: data.text,
+    });
+    io.emit("transcription_updated", {
+      videoId: data.videoId,
       start: data.start,
       end: data.end,
       text: data.text,

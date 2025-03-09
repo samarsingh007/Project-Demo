@@ -57,7 +57,7 @@ const AIAnalysis = ({ analysisResults, videoId, seekToTime }) => {
                   >
                     {result["Begin-End"].split("-")[0]}
                   </td>
-                  <td>{result["Fidelity Score"]}</td>
+                  <td style={{ fontWeight: "bold" }}>{result["Fidelity Score"]}</td>
                   <td>{result["AI Reasoning"]}</td>
                 </tr>
               ))}

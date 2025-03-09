@@ -1,5 +1,5 @@
 {
-  "homepage": "https://samarsingh007.github.io/Project-Demo",
+  "homepage": "/",
   "name": "project-demo",
   "version": "0.1.0",
   "private": true,
@@ -19,7 +19,7 @@
   },
   "scripts": {
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
+    "deploy": "serve -s build -p 3050",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

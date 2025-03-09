@@ -5,6 +5,7 @@
   gap: 40px;
   height: 75px;
   font-family: sans-serif;
+  position: relative; /* Make sure the container can position the dropdown */
 }
 
 .notification-section {
@@ -16,6 +17,8 @@
 .profile-section {
   display: flex;
   align-items: center;
+  cursor: pointer; 
+  position: relative; /* So we can absolutely-position dropdown within this area */
 }
 
 .icon-container {
@@ -25,7 +28,6 @@
 .topbar-icon {
   width: 25px;
   height: 25px;
-  cursor: pointer;
 }
 
 .notification-dot {
@@ -61,12 +63,45 @@
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  cursor: pointer;
 }
 
 .arrow-down {
   width: 20px;
   height: 20px;
   margin-left: 10px;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: 60px; /* Adjust to sit below the profile section */
+  right: 0;
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  padding: 10px;
+  min-width: 150px;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
   cursor: pointer;
+  text-align: left;
+  font-size: 0.9rem;
+  border: none;
+  background: none;
+  color: #333;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f1f1;
+}
+
+.email-text {
+  font-weight: 500;
+  margin-bottom: 8px;
+  pointer-events: none; /* So clicking on the email doesn't close the menu */
 }

@@ -38,7 +38,7 @@
   height: 22px;
 }
 
-.choose-button {
+.choose-button, .transcription-button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -48,7 +48,14 @@
   color: #818181;
   cursor: pointer;
   outline: none;
-  padding: 4px 8px;
+  padding: 4px 12px;
+  transition: all 0.3s ease;
+}
+
+.transcription-button.active {
+  background-color: #a7a9edaa;
+  color: #2f2f2f;
+  border-radius: 6px;
 }
 
 .orange-divider {

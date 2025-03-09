@@ -6,13 +6,13 @@ import TrainingHistory from "./Training History/TrainingHistory";
 import DiagramLibrary from "./Diagram Library/DiagramLibrary";
 import "./CSS/MainContainer.css";
 
-const MainContainer = () => {
+const MainContainer = ({ profile }) => {
   const [selectedPage, setSelectedPage] = useState("currentTraining");
   return (
     <div className="main-wrapper">
       <Sidebar selectedPage={selectedPage} setSelectedPage={setSelectedPage} />
       <div className="content-container">
-        <TopBar />
+        <TopBar profile={profile}/>
         <div
           style={{
             display: selectedPage === "currentTraining" ? "block" : "none",

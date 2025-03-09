@@ -182,6 +182,20 @@ input[type="text"] {
   background: none;
 }
 
+.skip-button {
+  padding: 10px 16px;
+  background-color: #f0ad4e;
+  color: white;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.skip-button:hover {
+  background-color: #ec971f;
+}
+
 .send-button {
   padding: 10px 16px;
   background-color: #007bff;

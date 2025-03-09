@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./CSS/VideoUpload.css";
 import ChooseIcon from "../../../Assets/Choose.svg";
+import transcriptionIcon from "../../../Assets/transcription.svg"
 import "./HighlightsTimeline.js";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -12,6 +13,7 @@ const VideoUpload = ({
   videoId,
   videoDuration,
   seekToTime,
+  handleTranscription,
 }) => {
   const [video, setVideo] = useState(null);
   const videoRef = useRef(null);
@@ -109,6 +111,20 @@ const VideoUpload = ({
             className="choose-button-icon"
           />
           Choose
+        </button>
+        <button
+           className="transcription-button"
+              onClick={(e) => {
+                handleTranscription(); // Toggle transcription visibility
+                e.target.classList.toggle("active"); // Toggle active class on the button
+              }}
+            >
+            <img
+            src={transcriptionIcon}
+            alt="Transcription Icon"
+            className="choose-button-icon"
+          />
+          Transcription
         </button>
       </div>
 

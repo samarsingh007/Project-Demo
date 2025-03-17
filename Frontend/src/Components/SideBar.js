@@ -21,7 +21,7 @@ const Sidebar = ({ selectedPage, setSelectedPage }) => {
           <span className="brand-logo">
             <img src={MainLogo} alt="Logo" className="logo-img" />
           </span>
-          {!isCollapsed && <span className="brand-text">ParentCoach.AI</span>}
+          {!isCollapsed && <span className="brand-text">Parent's AI Coach (PAC)</span>}
         </div>
 
         <button className="collapse-btn" onClick={toggleSidebar}>

@@ -56,7 +56,73 @@
   }
 }
 
-.bot-avatar {
+/* Chat Mode Toggle Container */
+.chat-mode-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -8px;
+  margin-bottom: 10px;
+  gap: 10px;
+  background: #f4f4f9;
+  padding: 8px;
+  border-radius: 10px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Style for radio labels */
+.chat-mode-toggle label {
+  position: relative;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease-in-out;
+  user-select: none;
+}
+
+/* Chat with AI button */
+.chat-mode-toggle input[type="radio"]:checked[value="ai"] + label {
+  background-color: #007bff;
+  color: white;
+  box-shadow: 0px 3px 8px rgba(0, 123, 255, 0.4);
+}
+
+/* Chat with SLP button */
+.chat-mode-toggle input[type="radio"]:checked[value="slp"] + label {
+  background-color: #ff9226;
+  color: white;
+  box-shadow: 0px 3px 8px rgba(255, 90, 95, 0.4);
+}
+
+/* Default button style */
+.chat-mode-toggle label {
+  background-color: white;
+  color: #555;
+  border: 2px solid transparent;
+}
+
+/* Hover effect */
+.chat-mode-toggle label:hover {
+  background-color: #eaeaea;
+  transition: background-color 0.1s;
+}
+
+/* Hide default radio button */
+.chat-mode-toggle input[type="radio"] {
+  display: none;
+}
+
+/* Smooth transition for buttons */
+.chat-mode-toggle input[type="radio"]:checked + label {
+  transform: scale(1.05);
+}
+
+.bot-avatar, .slp-avatar {
   width: 35px;
   height: 35px;
   margin-right: 8px;

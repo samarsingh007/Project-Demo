@@ -33,12 +33,19 @@
   color: #333;
 }
 
+.training-video-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
 .choose-button-icon {
   width: 22px;
   height: 22px;
 }
 
-.choose-button, .transcription-button {
+.choose-button, .transcription-button, .demo-button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -50,6 +57,16 @@
   outline: none;
   padding: 4px 12px;
   transition: all 0.3s ease;
+}
+
+.demo-button {
+  border-radius: 6px;
+}
+
+.demo-button.active {
+  background-color: #ffa500;
+  color: white;
+  border: none;
 }
 
 .transcription-button.active {

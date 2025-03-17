@@ -12,6 +12,7 @@ import constants
 import time
 import re
 from dotenv import load_dotenv
+import requests
 load_dotenv()
 
 
@@ -25,6 +26,18 @@ openai.api_key = constants.OPENAI_API_KEY
 socket_server_url = os.getenv('SOCKET_SERVER_URL')
 sio = socketio.Client()
 sio.connect(socket_server_url)
+
+
+# def download_from_minio(presigned_get_url, local_temp_path):
+#     """Downloads file from MinIO using a presigned GET URL."""
+#     logging.info(f"Downloading video from presigned GET URL: {presigned_get_url}")
+#     response = requests.get(presigned_get_url, stream=True)
+#     response.raise_for_status()
+#     with open(local_temp_path, "wb") as f:
+#         for chunk in response.iter_content(chunk_size=1024*1024):
+#             f.write(chunk)
+#     logging.info(f"Video downloaded to {local_temp_path}")
+
 
 # --- Function to Remove Temporary Files ---
 def clean_temp_files(file_paths):
@@ -226,7 +239,7 @@ def process_video(video_id, video_path, output_csv="output_analysis.csv"):
     finally:
         clean_temp_files(temp_files)"""
 
-def process_video(video_id, video_path, output_csv="output_analysis.csv"):
+def process_video(video_id, video_path, output_csv="output_analysis.csv", is_demo=False):
     temp_files = []
     try:
         logging.info("Processing started.")
@@ -234,6 +247,12 @@ def process_video(video_id, video_path, output_csv="output_analysis.csv"):
         # Step 1: Generate Transcript
         transcript = generate_transcript(video_path)
         send_transcriptions(video_id, transcript)
+        
+        if is_demo:
+            time.sleep(5)
+            logging.info("Demo video detected. Skipping further analysis.")
+            sio.emit('analysis_complete', {"csvPath": output_csv})
+            return
 
         # Step 2: Split Video into Segments
         result_segments, segments_times = video_manager.split_transcript_by_multi_llm(transcript)
@@ -262,4 +281,18 @@ if __name__ == "__main__":
     video_id = sys.argv[1]
     video_file_path = sys.argv[2]
     output_file_path = sys.argv[3]
-    process_video(video_id, video_file_path, output_file_path)
+    is_demo = sys.argv[4].lower() == "true"
+    process_video(video_id, video_file_path, output_file_path, is_demo)
+
+    # video_id = sys.argv[1]
+    # presigned_get_url = sys.argv[2]    
+    # output_file_path = sys.argv[3]
+    # is_demo = sys.argv[4].lower() == "true"
+
+    # local_temp_path = f"/home/samarpra/Project-Demo/AI4BeAgent/temp/{video_id}.mp4"
+    # download_from_minio(presigned_get_url, local_temp_path)
+    # process_video(video_id, local_temp_path, output_file_path, is_demo)
+    # try:
+    #     os.remove(local_temp_path)
+    # except:
+    #     pass

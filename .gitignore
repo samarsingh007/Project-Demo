@@ -5,12 +5,15 @@
 /Backend/node_modules
 /Backend/.env
 /Backend/backend.log
+/Backend/demo/demo.MOV
 /Frontend/.env
 /Frontend/build
 /Frontend/frontend.log
+/Frontend/public/demo/demo.MOV
 /.pnp
 .pnp.js
-
+mc
+myminio
 # testing
 /coverage
 

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./CSS/VideoUpload.css";
 import ChooseIcon from "../../../Assets/Choose.svg";
-import transcriptionIcon from "../../../Assets/transcription.svg"
-import "./HighlightsTimeline.js";
+import transcriptionIcon from "../../../Assets/transcription.svg";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -20,6 +19,32 @@ const VideoUpload = ({
   const fileInputRef = useRef(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDemoActive, setIsDemoActive] = useState(false);
+
+  const handlePlayDemoVideo = async () => {
+    setIsDemoActive((prev) => !prev);
+    try {
+      // a) Set the local video to your known demo path
+      //    (this is just for front-end playback)
+      setVideo(process.env.PUBLIC_URL + "/demo/demo.MOV");
+
+      // b) Notify the backend to analyze the *same* demo video
+      const response = await fetch(`${REACT_APP_API_BASE_URL}/api/start-demo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      const data = await response.json();
+
+      // c) If the backend returns a videoId for the demo
+      if (data.videoId) {
+        setVideoId(data.videoId);
+        setNewVideoUploaded(true);
+      }
+      console.log("Demo video analysis started successfully.");
+    } catch (error) {
+      console.error("Error loading demo video:", error);
+    }
+  };
 
   const handleVideoUpload = async (event) => {
     const file = event.target.files[0];
@@ -69,6 +94,89 @@ const VideoUpload = ({
     }
   };
 
+
+  // const handleVideoUpload = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
+
+  //   const previewURL = URL.createObjectURL(file);
+  //   setVideo(previewURL);
+
+
+  //   try {
+  //     // ✅ Step 1: Request a pre-signed URL from the backend
+  //     const presignedUrlResponse = await fetch(
+  //       `${REACT_APP_API_BASE_URL}/api/get-presigned-url?filename=${file.name}`
+  //     );
+
+  //     if (!presignedUrlResponse.ok) {
+  //       throw new Error("Failed to get presigned URL");
+  //     }
+
+  //     const { videoId, presignedUrl, objectName } = await presignedUrlResponse.json();
+  //     console.log("File uploaded with object name:", objectName);
+
+  //     setIsUploading(true);
+  //     setUploadProgress(0);
+
+  //         // Step 2: Upload the video file to MinIO with XHR
+  //         await new Promise((resolve, reject) => {
+  //           const xhr = new XMLHttpRequest();
+  //           xhr.open("PUT", presignedUrl);
+    
+  //           // track progress
+  //           xhr.upload.onprogress = (e) => {
+  //             if (e.lengthComputable) {
+  //               const percent = Math.round((e.loaded / e.total) * 100);
+  //               setUploadProgress(percent);
+  //             }
+  //           };
+    
+  //           xhr.onload = () => {
+  //             if (xhr.status === 200) {
+  //               console.log("✅ Video uploaded successfully to MinIO.");
+  //               resolve();
+  //             } else {
+  //               console.error("Upload failed with status", xhr.status);
+  //               reject(new Error("Failed to upload video to MinIO"));
+  //             }
+  //           };
+    
+  //           xhr.onerror = () => {
+  //             reject(new Error("Network error during upload"));
+  //           };
+    
+  //           xhr.send(file);
+  //         });
+    
+    
+  //         console.log("✅ Video uploaded successfully to MinIO.");    
+
+  //     // ✅ Step 3: Notify the backend to start video analysis
+  //     const analysisResponse = await fetch(
+  //       `${REACT_APP_API_BASE_URL}/api/start-analysis`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ videoId }),
+  //       }
+  //     );
+
+  //     if (!analysisResponse.ok) {
+  //       throw new Error("Failed to start analysis");
+  //     }
+
+  //     console.log("✅ Analysis started successfully.");
+
+  //     setNewVideoUploaded(true);
+  //     setVideoId(videoId);
+  //   } catch (error) {
+  //     console.error("Error uploading video:", error);
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
+
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       const currentTime = videoRef.current.currentTime;
@@ -95,6 +203,7 @@ const VideoUpload = ({
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
+    setIsDemoActive(false);
   };
 
   return (
@@ -104,6 +213,7 @@ const VideoUpload = ({
           <span className="orange-dot" />
           <h2>Training Video</h2>
         </div>
+        <div className="training-video-buttons">
         <button className="choose-button" onClick={handleChooseClick}>
           <img
             src={ChooseIcon}
@@ -111,6 +221,19 @@ const VideoUpload = ({
             className="choose-button-icon"
           />
           Choose
+        </button>
+        <button
+            className={`demo-button ${isDemoActive ? "active" : ""}`}
+            onClick={(e) => {
+            handlePlayDemoVideo(); // Toggle transcription visibility
+          }}
+        >
+            <img
+            src={ChooseIcon}
+            alt="Choose Icon"
+            className="choose-button-icon"
+          />
+          Use Demo Video
         </button>
         <button
            className="transcription-button"
@@ -126,6 +249,7 @@ const VideoUpload = ({
           />
           Transcription
         </button>
+      </div>
       </div>
 
       <div className="orange-divider" />

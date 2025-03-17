@@ -70,28 +70,37 @@ const TranscriptionWindow = ({ videoId, videoTime, seekToTime }) => {
    */
   useEffect(() => {
     if (!allTranscriptions.length || videoTime < 0) return;
-
-    // We assume each item has { start, end, text } in MM:SS
-    const relevant = allTranscriptions.find((transcription) => {
-      const startInSec = parseTime(transcription.start);
-      const endInSec = parseTime(transcription.end);
-      return startInSec <= videoTime && videoTime <= endInSec;
-    });
-
-    if (relevant) {
+  
+    // 1. Sort transcriptions by start time (if not already sorted)
+    const sorted = [...allTranscriptions].sort(
+      (a, b) => parseTime(a.start) - parseTime(b.start)
+    );
+  
+    // 2. Find the last snippet whose start <= videoTime
+    let active = null;
+    for (const snippet of sorted) {
+      if (parseTime(snippet.start) <= videoTime) {
+        active = snippet;
+      } else {
+        // snippet.start is now beyond videoTime, so stop
+        break;
+      }
+    }
+  
+    if (active) {
+      // we found a snippet that started before or exactly videoTime
       setActiveTranscription({
-        text: relevant.text,
-        start: relevant.start,
+        text: active.text,
+        start: active.start,
       });
     } else {
-      // If there's no matching snippet for the current time
-      const lastTranscription = allTranscriptions[allTranscriptions.length - 1];
-      setActiveTranscription({
-        text: lastTranscription.text,
-        start: lastTranscription.start,
-      });
+      // If no snippet even starts before videoTime,
+      // user might be before the first snippet’s start time
+      // or no valid transcriptions at all:
+      setActiveTranscription(null);
     }
   }, [allTranscriptions, videoTime]);
+  
 
   useEffect(() => {
     if (!videoId) return;

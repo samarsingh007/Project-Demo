@@ -3,6 +3,7 @@ import "./CSS/ChatInterface.css";
 
 import BotLogo from "../../../Assets/main-logo.svg";
 import VoiceIcon from "../../../Assets/voice.svg";
+import SLPLogo from "../../../Assets/slp.svg";
 
 const ChatInterface = ({
   videoTime,
@@ -21,6 +22,7 @@ const ChatInterface = ({
 
   // This is the mode toggle: "ai" or "slp"
   const [chatMode, setChatMode] = useState("ai");
+  const [senderRole, setSenderRole] = useState("bot");
 
   // For AI-specific usage
   const [messages, setMessages] = useState([]); // pulled from /api/chat/:context
@@ -56,17 +58,17 @@ const ChatInterface = ({
     if (chatMode === "ai" && aiMessages.length === 0) {
       const defaultAiMsg = {
         text: "Hi, I'm the AI Assistant! Please upload a video and I'll help you reflect on your interactions.",
-        sender: "bot",
+        sender: senderRole,
       };
       setAiMessages([defaultAiMsg]);
     } else if (chatMode === "slp" && slpMessages.length === 0) {
       const defaultSlpMsg = {
         text: "Hello, I'm your SLP (a human). Let me know how I can help you today!",
-        sender: "bot",
+        sender: senderRole,
       };
       setSlpMessages([defaultSlpMsg]);
     }
-  }, [chatMode, aiMessages.length, slpMessages.length]);
+  }, [chatMode, aiMessages.length, slpMessages.length, senderRole]);
 
   // ------------------------------------------------------------------
   // 3) Existing logic that fetches "scripted" AI messages from /api/chat/:context
@@ -150,7 +152,7 @@ const ChatInterface = ({
         // Add video upload message to AI chat
         const videoUploadMessage = {
           text: "A new video has been successfully uploaded.",
-          sender: "bot",
+          sender: senderRole,
         };
         if (!processedMessages.current.has(videoUploadMessage.text)) {
           processedMessages.current.add(videoUploadMessage.text);
@@ -158,19 +160,19 @@ const ChatInterface = ({
         }
 
         setContext("askParentName");
-        const askParentMsg = { text: "Please enter the parent's name:", sender: "bot" };
+        const askParentMsg = { text: "Please enter the parent's name:", sender: senderRole };
         setAiMessages((prev) => [...prev, askParentMsg]);
         setIsAwaitingResponse(true);
       } else {
         // If in SLP mode, you might do something else
         setSlpMessages((prev) => [
           ...prev,
-          { text: "A new video has been uploaded (SLP mode).", sender: "bot" },
+          { text: "A new video has been uploaded (SLP mode).", sender: senderRole },
         ]);
       }
       setNewVideoUploaded(false);
     }
-  }, [newVideoUploaded, setNewVideoUploaded, chatMode]);
+  }, [newVideoUploaded, setNewVideoUploaded, chatMode, senderRole]);
 
   // ------------------------------------------------------------------
   // 7) Example initial message for AI mode if user never toggles modes
@@ -188,7 +190,7 @@ const ChatInterface = ({
       };
       setAiMessages([initialMessage]);
     }
-  }, [aiMessages.length]); // runs only once
+  }, [aiMessages.length, senderRole]); // runs only once
 
   // ------------------------------------------------------------------
   // 8) Auto-scroll the chat container
@@ -287,8 +289,8 @@ const ChatInterface = ({
       setIsTyping(true);
       setTimeout(() => {
         const slpReply = {
-          text: "SLP (human) will respond soon... (placeholder).",
-          sender: "bot",
+          text: "Your message has been shared with the professional. They will respond soon!",
+          sender: senderRole,
         };
         setSlpMessages((prev) => [...prev, slpReply]);
         setIsTyping(false);
@@ -305,7 +307,7 @@ const ChatInterface = ({
       setIsTyping(true);
 
       setTimeout(() => {
-        const askChildMsg = { text: "Please enter the child's name:", sender: "bot" };
+        const askChildMsg = { text: "Please enter the child's name:", sender: senderRole };
         setAiMessages((prev) => [...prev, askChildMsg]);
 
         setIsTyping(false);
@@ -380,36 +382,41 @@ const ChatInterface = ({
   return (
     <div className="chat-interface">
       {/* Radio toggle to choose mode */}
-      <div style={{ marginBottom: "10px" }}>
-        <label style={{ marginRight: "1rem" }}>
-          <input
-            type="radio"
-            name="chatMode"
-            value="ai"
-            checked={chatMode === "ai"}
-            onChange={() => setChatMode("ai")}
-          />
-          Chat with AI
-        </label>
+      <div className="chat-mode-toggle">
+        <input
+          type="radio"
+          id="chat-ai"
+          name="chatMode"
+          value="ai"
+          checked={chatMode === "ai"}
+          onChange={() => {
+            setChatMode("ai");
+            setSenderRole("bot"); // user messages are from "slp"
+          }}/>
+        <label htmlFor="chat-ai">Chat with AI</label>
 
-        <label>
-          <input
-            type="radio"
-            name="chatMode"
-            value="slp"
-            checked={chatMode === "slp"}
-            onChange={() => setChatMode("slp")}
-          />
-          Chat with SLP
-        </label>
+        <input
+          type="radio"
+          id="chat-slp"
+          name="chatMode"
+          value="slp"
+          checked={chatMode === "slp"}
+          onChange={() => {
+            setChatMode("slp");
+            setSenderRole("slp"); // user messages are from "slp"
+          }}/>
+        <label htmlFor="chat-slp">Chat with SLP</label>
       </div>
 
       {/* Chat Window */}
       <div className="chat-box" ref={chatBoxRef}>
         {displayedMessages.map((msg, index) => (
           <div key={index} className={`chat-message ${msg.sender} fade-in`}>
-            {msg.sender === "bot" && <img src={BotLogo} alt="Bot" className="bot-avatar" />}
-
+            {msg.sender === "bot" ? (
+              <img src={BotLogo} alt="Bot" className="bot-avatar" />
+            ) : msg.sender === "slp" ? (
+              <img src={SLPLogo} alt="SLP" className="slp-avatar" />
+            ) : null}
             <div className="message-content">
               {/* AI message might have a timestamp */}
               {msg.sender === "bot" && msg.timestamp && (
@@ -460,7 +467,11 @@ const ChatInterface = ({
 
         {isTyping && !isAwaitingResponse && (
           <div className="typing-indicator">
-            <img src={BotLogo} alt="Bot" className="typing-bot-avatar" />
+            {chatMode === "ai" ? (
+              <img src={BotLogo} alt="Bot" className="bot-avatar" />
+            ) : (
+              <img src={SLPLogo} alt="Bot" className="slp-avatar" />
+            )}
             <span className="dot"></span>
             <span className="dot"></span>
             <span className="dot"></span>

@@ -12,16 +12,15 @@ const { Pool } = require("pg");
 require("dotenv").config();
 // const Minio = require("minio");
 
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // Required for Supabase
+  ssl: { rejectUnauthorized: false },
 });
 
-pool.connect()
+pool
+  .connect()
   .then(() => console.log("Connected to Supabase PostgreSQL ✅"))
-  .catch(err => console.error("Error connecting to database ❌", err));
+  .catch((err) => console.error("Error connecting to database ❌", err));
 
 module.exports = pool;
 
@@ -31,38 +30,42 @@ const socketIo = require("socket.io");
 const server = http.createServer(app);
 const io = socketIo(server, { cors: { origin: "*" } });
 
-
 const HOST = process.env.HOST;
 const PORT = process.env.PORT;
 const pythonPath = process.env.PYTHON_PATH;
-const allowedOrigins = ["https://ai4behavior.xlabub.com","https://backend_ai4behavior.xlabub.com"]; 
+const allowedOrigins = [
+  "https://ai4behavior.xlabub.com",
+  "https://backend_ai4behavior.xlabub.com",
+];
 
-app.use(cors({
-  origin: (origin, callback) => {
+// const FRONTEND_PORT = process.env.FRONTEND_PORT;
+// const FRONTEND_URL = `http://${HOST}:${FRONTEND_PORT}`;
+// const allowedOrigins = [FRONTEND_URL, "https://ai4behavior.xlabub.com","https://backend_ai4behavior.xlabub.com"];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
+        callback(null, true);
       } else {
-          callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS"));
       }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
-
-// ✅ Handle preflight requests manually
-// Automatically handle preflight requests
-app.options('*', cors()
-
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
 );
-app.use(express.urlencoded({ extended: true, limit: '500mb' }));
-app.use(express.json({ limit: '50mb' }));
-// Debug Middleware to log incoming requests
+
+app.options("*", cors());
+app.use(express.urlencoded({ extended: true, limit: "500mb" }));
+app.use(express.json({ limit: "50mb" }));
+
 app.use((req, res, next) => {
-    console.log(`Received ${req.method} request to ${req.url}`);
-    console.log('Request Headers:', req.headers);
-    console.log('Request Body:', req.body);
-    next();
+  console.log(`Received ${req.method} request to ${req.url}`);
+  console.log("Request Headers:", req.headers);
+  console.log("Request Body:", req.body);
+  next();
 });
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -106,40 +109,46 @@ const demoAnalysisMessages = [
   {
     "Begin-End": "01:28-01:35",
     "Fidelity Score": "3",
-    "AI Reasoning": "Pay closer attention to non-verbal cues, such as signing or gestures, especially when your child is engaged in activities that may make verbal communication difficult, like being inside a tunnel."
+    "AI Reasoning":
+      "Pay closer attention to non-verbal cues, such as signing or gestures, especially when your child is engaged in activities that may make verbal communication difficult, like being inside a tunnel.",
   },
   {
     "Begin-End": "01:36-01:42",
     "Fidelity Score": "4",
-    "AI Reasoning": "You're effectively following the intervention flowchart steps by establishing joint attention, presenting your strategy, and waiting for at least 3 seconds.\n\nAfter repeating the question, your response should branch into two outcomes: if you receive a correct response, acknowledge and reinforce it; if no response or an incorrect response occurs, repeat the exact question once more. This structured repetition helps the child understand and engage while providing clarity in your feedback process."
+    "AI Reasoning":
+      "You're effectively following the intervention flowchart steps by establishing joint attention, presenting your strategy, and waiting for at least 3 seconds.\n\nAfter repeating the question, your response should branch into two outcomes: if you receive a correct response, acknowledge and reinforce it; if no response or an incorrect response occurs, repeat the exact question once more. This structured repetition helps the child understand and engage while providing clarity in your feedback process.",
   },
   {
     "Begin-End": "01:43-01:48",
     "Fidelity Score": "4",
-    "AI Reasoning": "The child is now both gesturing and vocalizing, showing progress in her communication. You followed the correct procedure by repeating the question after receiving an unclear response, allowing her to articulate more effectively on the second attempt.\n\nWhile the initial response may have been acceptable despite being unclear, your decision to repeat the question aligns with the flowchart guidelines: if no response or an unclear response is given, repeat the question once more to support clearer communication and reinforce understanding."
+    "AI Reasoning":
+      "The child is now both gesturing and vocalizing, showing progress in her communication. You followed the correct procedure by repeating the question after receiving an unclear response, allowing her to articulate more effectively on the second attempt.\n\nWhile the initial response may have been acceptable despite being unclear, your decision to repeat the question aligns with the flowchart guidelines: if no response or an unclear response is given, repeat the question once more to support clearer communication and reinforce understanding.",
   },
   {
     "Begin-End": "01:49-01:55",
     "Fidelity Score": "4",
-    "AI Reasoning": "You followed an effective approach by waiting approximately 3 seconds after asking the initial question and then repeating the exact same question when there was no response.\n\nThis consistency is key—by not altering the question, you maintained clarity and avoided introducing potential confusion.\n\nChanging the question, even with good intentions, could shift the child's focus and lead to a different response. Sticking to the original question allows for a more accurate follow-through in the flowchart process, keeping the intervention on track."
+    "AI Reasoning":
+      "You followed an effective approach by waiting approximately 3 seconds after asking the initial question and then repeating the exact same question when there was no response.\n\nThis consistency is key—by not altering the question, you maintained clarity and avoided introducing potential confusion.\n\nChanging the question, even with good intentions, could shift the child's focus and lead to a different response. Sticking to the original question allows for a more accurate follow-through in the flowchart process, keeping the intervention on track.",
   },
   {
     "Begin-End": "01:56-02:02",
     "Fidelity Score": "3",
-    "AI Reasoning": "It's important to recognize that some children may need extra time to process and respond to questions. By repeating the same question after a 3-second pause, you give the child time to understand, process their response, and express it. This is especially crucial for children with developmental delays, such as those with Down syndrome or autism, who may require additional time for both comprehension and expressive language. Although the 3-second pause may feel lengthy for adults, it is essential for the child’s processing. You are already applying this strategy effectively by allowing this pause before repeating the question, which helps reinforce understanding and gives the child an opportunity to respond."
+    "AI Reasoning":
+      "It's important to recognize that some children may need extra time to process and respond to questions. By repeating the same question after a 3-second pause, you give the child time to understand, process their response, and express it. This is especially crucial for children with developmental delays, such as those with Down syndrome or autism, who may require additional time for both comprehension and expressive language. Although the 3-second pause may feel lengthy for adults, it is essential for the child’s processing. You are already applying this strategy effectively by allowing this pause before repeating the question, which helps reinforce understanding and gives the child an opportunity to respond.",
   },
   {
     "Begin-End": "02:03-02:08",
     "Fidelity Score": "1",
-    "AI Reasoning": "Joint attention is a critical first step in any interaction, whether you're asking a question or modeling language. If the child is not physically or mentally engaged—such as when she shows no interest—this indicates a lack of joint attention. In such moments, it's important not to proceed with asking questions or providing feedback. Instead, focus on gently redirecting her attention to the shared activity before continuing."
+    "AI Reasoning":
+      "Joint attention is a critical first step in any interaction, whether you're asking a question or modeling language. If the child is not physically or mentally engaged—such as when she shows no interest—this indicates a lack of joint attention. In such moments, it's important not to proceed with asking questions or providing feedback. Instead, focus on gently redirecting her attention to the shared activity before continuing.",
   },
   {
     "Begin-End": "03:36-03:42",
     "Fidelity Score": "4",
-    "AI Reasoning": "Your approach of acknowledging and then expanding on your child's response was highly effective. When Aria responded with 'rain,' you did the right thing by first validating her response with a simple affirmation: 'Yes, rain.' This immediate acknowledgment provides positive feedback and reinforces her language use.\n\nYou then took it a step further by expanding on her single-word response, introducing a more complex sentence ('It's raining,' 'There's an umbrella,' etc.). This method not only enriches her understanding of the concept but also models more complex language structures for her."
-  }
+    "AI Reasoning":
+      "Your approach of acknowledging and then expanding on your child's response was highly effective. When Aria responded with 'rain,' you did the right thing by first validating her response with a simple affirmation: 'Yes, rain.' This immediate acknowledgment provides positive feedback and reinforces her language use.\n\nYou then took it a step further by expanding on her single-word response, introducing a more complex sentence ('It's raining,' 'There's an umbrella,' etc.). This method not only enriches her understanding of the concept but also models more complex language structures for her.",
+  },
 ];
-
 
 const chatMessages = {
   introduction: [
@@ -155,24 +164,30 @@ const chatMessages = {
   ],
 };
 
-function analyzeVideoPython(videoId, videoPath, outputCsvPath, socket, isDemo = false) {
+function analyzeVideoPython(
+  videoId,
+  videoPath,
+  outputCsvPath,
+  socket,
+  isDemo = false
+) {
   return new Promise((resolve, reject) => {
     const pythonProcess = spawn(pythonPath, [
       path.join(__dirname, "../AI4BeAgent/super_SLP.py"),
       videoId,
       videoPath,
       outputCsvPath,
-      isDemo ? "true" : "false"
+      isDemo ? "true" : "false",
     ]);
-// function analyzeVideoPython(videoId, videoUrl, outputCsvPath, socket, isDemo = false) {
-//   return new Promise((resolve, reject) => {
-//     const pythonProcess = spawn(pythonPath, [
-//       path.join(__dirname, "../AI4BeAgent/super_SLP.py"),
-//       videoId,
-//       videoUrl,
-//       outputCsvPath,
-//       isDemo ? "true" : "false"
-//     ]);
+    // function analyzeVideoPython(videoId, videoUrl, outputCsvPath, socket, isDemo = false) {
+    //   return new Promise((resolve, reject) => {
+    //     const pythonProcess = spawn(pythonPath, [
+    //       path.join(__dirname, "../AI4BeAgent/super_SLP.py"),
+    //       videoId,
+    //       videoUrl,
+    //       outputCsvPath,
+    //       isDemo ? "true" : "false"
+    //     ]);
 
     pythonProcess.stdout.on("data", (data) => {
       const message = data.toString().trim();
@@ -200,51 +215,44 @@ function analyzeVideoPython(videoId, videoPath, outputCsvPath, socket, isDemo = 
 }
 
 app.post("/api/start-demo", async (req, res) => {
-  // We'll make a "demo" videoId
   const demoId = "demo-video-id";
-
-  // Path to your server-side demo file
   const localDemoPath = path.join(__dirname, "demo", "demo.MOV");
-
-  // Where to store the analysis CSV
   const outputCsv = path.join(__dirname, "uploads", `${demoId}.csv`);
 
   transcriptionStore.set(demoId, {
     status: "processing",
     csvPath: outputCsv,
     transcriptions: [],
-    analysisSegments: [],  // Store hardcoded messages
+    analysisSegments: [],
   });
 
   try {
-    // ✅ Send transcription-only processing request to Python
-    analyzeVideoPython(demoId, localDemoPath, outputCsv, io, true) // true = demo
-    .then(() => {
+    analyzeVideoPython(demoId, localDemoPath, outputCsv, io, true).then(() => {
       demoAnalysisMessages.forEach((message, index) => {
-      setTimeout(() => {
-        const analysisData = { videoId: demoId, ...message };
-        transcriptionStore.get(demoId).analysisSegments.push(analysisData);
-        io.emit("analysis_progress", analysisData);
-      }, index * 3000);
-      setTimeout(() => {
-        transcriptionStore.set(demoId, { ...transcriptionStore.get(demoId), status: "completed" });
-        io.emit("analysis_complete", { videoId: demoId, csvPath: outputCsv });
-      }, demoAnalysisMessages.length * 3000 + 2000);
+        setTimeout(() => {
+          const analysisData = { videoId: demoId, ...message };
+          transcriptionStore.get(demoId).analysisSegments.push(analysisData);
+          io.emit("analysis_progress", analysisData);
+        }, index * 3000);
+        setTimeout(() => {
+          transcriptionStore.set(demoId, {
+            ...transcriptionStore.get(demoId),
+            status: "completed",
+          });
+          io.emit("analysis_complete", { videoId: demoId, csvPath: outputCsv });
+        }, demoAnalysisMessages.length * 3000 + 2000);
+      });
     });
-  })
-}
-  catch (error) {
+  } catch (error) {
     console.error("Error processing demo video:", error);
     transcriptionStore.set(demoId, { status: "failed" });
   }
-  // // Track in transcriptionStore
   // transcriptionStore.set(demoId, {
   //   status: "processing",
   //   csvPath: outputCsv,
   //   transcriptions: [],
   // });
 
-  // // Kick off Python script using your existing function
   // analyzeVideoPython(demoId, localDemoPath, outputCsv, io, true)
   //   .then(() => {
   //     transcriptionStore.set(demoId, {
@@ -261,21 +269,17 @@ app.post("/api/start-demo", async (req, res) => {
   //     });
   //   });
 
-  // Immediately respond with the "demo" videoId
   res.json({ videoId: demoId });
 });
 
 // app.get("/api/get-presigned-url", async (req, res) => {
 //   try {
-//     // The client might pass the original filename or extension
-//     const { filename } = req.query; // e.g. "myVideo.mp4"
+//     const { filename } = req.query;
 
-//     // We'll generate a unique videoId
 //     const videoId = uuidv4();
-//     const ext = path.extname(filename) || ".mp4"; // default .mp4 if none
-//     const objectName = `${videoId}${ext}`; // e.g. "ab12-3456.mp4"
+//     const ext = path.extname(filename) || ".mp4";
+//     const objectName = `${videoId}${ext}`;
 
-//     // Generate presigned PUT URL (valid for e.g. 1 hour = 3600s)
 //     const presignedUrl = await new Promise((resolve, reject) => {
 //       minioClient.presignedPutObject(
 //         BUCKET,
@@ -288,8 +292,6 @@ app.post("/api/start-demo", async (req, res) => {
 //       );
 //     });
 
-//     // Store a record so we know what object name corresponds to which videoId
-//     // (We'll also set some initial placeholders, e.g. status="uploaded")
 //     transcriptionStore.set(videoId, {
 //       objectName,
 //       status: "uploaded",
@@ -303,9 +305,6 @@ app.post("/api/start-demo", async (req, res) => {
 //   }
 // });
 
-// // 2) POST /api/start-analysis
-// //    Client calls this AFTER successfully uploading the video to MinIO.
-// //    We retrieve from MinIO and spawn the Python script for analysis.
 // app.post("/api/start-analysis", async (req, res) => {
 //   try {
 //     const { videoId } = req.body;
@@ -338,7 +337,6 @@ app.post("/api/start-demo", async (req, res) => {
 //       });
 //     });
 
-//     // Now do your Python analysis
 //     console.log("Running Python script with:", videoId, objectName, outputCsv);
 //     analyzeVideoPython(videoId, getUrl, outputCsv, io)
 //       .then(() => {
@@ -358,14 +356,12 @@ app.post("/api/start-demo", async (req, res) => {
 //         });
 //       });
 
-//     // Respond right away, telling the client analysis has started
 //     return res.json({ success: true, status: "analysis-started" });
 //   } catch (error) {
 //     console.error("Error in /api/start-analysis:", error);
 //     return res.status(500).json({ error: "Failed to start analysis" });
 //   }
 // });
-
 
 app.post("/api/ai-chat", async (req, res) => {
   try {

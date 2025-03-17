@@ -13,17 +13,15 @@ const TopBar = ({ profile }) => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate("/login"); // Redirect to login page
+    navigate("/login");
   };
 
-  // Fallbacks if profile is null:
   const userName = profile?.name || "Guest User";
   const userLocation = profile?.location || "Unknown";
-  const userEmail = profile?.email || "No Email Found"; // Must ensure your `profiles` table has an "email" column
+  const userEmail = profile?.email || "No Email Found";
 
   return (
     <div className="topbar-container">
-      {/* Notification Section */}
       <div className="notification-section">
         <div className="icon-container">
           <img src={QuestionIcon} alt="Help" className="topbar-icon" />
@@ -34,7 +32,6 @@ const TopBar = ({ profile }) => {
         </div>
       </div>
 
-      {/* Profile Section */}
       <div
         className="profile-section"
         onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -51,7 +48,6 @@ const TopBar = ({ profile }) => {
         />
       </div>
 
-      {/* Dropdown Menu */}
       {dropdownOpen && (
         <div className="dropdown-menu">
           <div className="dropdown-item email-text">{userEmail}</div>

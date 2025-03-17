@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import MainContainer from "./Components/MainContainer";
 import AuthPage from "./Components/AuthPage";
 import supabase from "./supabaseClient";
 
 function App() {
-  const [session, setSession] = useState(undefined); // Start as `undefined` so we know we're still checking
-  const [isGuest, setIsGuest] = useState(false); 
+  const [session, setSession] = useState(undefined);
+  const [isGuest, setIsGuest] = useState(false);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getSession = async () => {
-      setLoading(true); // show loader / suspense
+      setLoading(true);
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -25,7 +30,6 @@ function App() {
 
     getSession();
 
-    // Listen for any auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session || null);
@@ -37,7 +41,6 @@ function App() {
       }
     );
 
-    // Cleanup
     return () => {
       authListener.subscription?.unsubscribe();
     };
@@ -55,7 +58,6 @@ function App() {
     }
   };
 
-  // If we're still checking if the user is logged in, show a simple loader
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -63,7 +65,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* If session or isGuest, go to Project-Demo; else go to /login */}
+        {}
         <Route
           path="/"
           element={
@@ -74,9 +76,9 @@ function App() {
             )
           }
         />
-        {/* Public login route */}
+        {}
         <Route path="/login" element={<AuthPage setIsGuest={setIsGuest} />} />
-        {/* Private route that requires session or isGuest */}
+        {}
         <Route
           path="/Project-Demo"
           element={

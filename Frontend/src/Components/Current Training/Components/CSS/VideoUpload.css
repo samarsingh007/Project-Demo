@@ -45,7 +45,9 @@
   height: 22px;
 }
 
-.choose-button, .transcription-button, .demo-button {
+.choose-button,
+.transcription-button,
+.demo-button {
   display: flex;
   align-items: center;
   gap: 6px;

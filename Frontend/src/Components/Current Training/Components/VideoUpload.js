@@ -24,18 +24,14 @@ const VideoUpload = ({
   const handlePlayDemoVideo = async () => {
     setIsDemoActive((prev) => !prev);
     try {
-      // a) Set the local video to your known demo path
-      //    (this is just for front-end playback)
       setVideo(process.env.PUBLIC_URL + "/demo/demo.MOV");
 
-      // b) Notify the backend to analyze the *same* demo video
       const response = await fetch(`${REACT_APP_API_BASE_URL}/api/start-demo`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
       const data = await response.json();
 
-      // c) If the backend returns a videoId for the demo
       if (data.videoId) {
         setVideoId(data.videoId);
         setNewVideoUploaded(true);
@@ -94,7 +90,6 @@ const VideoUpload = ({
     }
   };
 
-
   // const handleVideoUpload = async (event) => {
   //   const file = event.target.files[0];
   //   if (!file) return;
@@ -102,9 +97,7 @@ const VideoUpload = ({
   //   const previewURL = URL.createObjectURL(file);
   //   setVideo(previewURL);
 
-
   //   try {
-  //     // ✅ Step 1: Request a pre-signed URL from the backend
   //     const presignedUrlResponse = await fetch(
   //       `${REACT_APP_API_BASE_URL}/api/get-presigned-url?filename=${file.name}`
   //     );
@@ -119,19 +112,17 @@ const VideoUpload = ({
   //     setIsUploading(true);
   //     setUploadProgress(0);
 
-  //         // Step 2: Upload the video file to MinIO with XHR
   //         await new Promise((resolve, reject) => {
   //           const xhr = new XMLHttpRequest();
   //           xhr.open("PUT", presignedUrl);
-    
-  //           // track progress
+
   //           xhr.upload.onprogress = (e) => {
   //             if (e.lengthComputable) {
   //               const percent = Math.round((e.loaded / e.total) * 100);
   //               setUploadProgress(percent);
   //             }
   //           };
-    
+
   //           xhr.onload = () => {
   //             if (xhr.status === 200) {
   //               console.log("✅ Video uploaded successfully to MinIO.");
@@ -141,16 +132,15 @@ const VideoUpload = ({
   //               reject(new Error("Failed to upload video to MinIO"));
   //             }
   //           };
-    
+
   //           xhr.onerror = () => {
   //             reject(new Error("Network error during upload"));
   //           };
-    
+
   //           xhr.send(file);
   //         });
-    
-    
-  //         console.log("✅ Video uploaded successfully to MinIO.");    
+
+  //         console.log("✅ Video uploaded successfully to MinIO.");
 
   //     // ✅ Step 3: Notify the backend to start video analysis
   //     const analysisResponse = await fetch(
@@ -214,42 +204,42 @@ const VideoUpload = ({
           <h2>Training Video</h2>
         </div>
         <div className="training-video-buttons">
-        <button className="choose-button" onClick={handleChooseClick}>
-          <img
-            src={ChooseIcon}
-            alt="Choose Icon"
-            className="choose-button-icon"
-          />
-          Choose
-        </button>
-        <button
+          <button className="choose-button" onClick={handleChooseClick}>
+            <img
+              src={ChooseIcon}
+              alt="Choose Icon"
+              className="choose-button-icon"
+            />
+            Choose
+          </button>
+          <button
             className={`demo-button ${isDemoActive ? "active" : ""}`}
             onClick={(e) => {
-            handlePlayDemoVideo(); // Toggle transcription visibility
-          }}
-        >
+              handlePlayDemoVideo();
+            }}
+          >
             <img
-            src={ChooseIcon}
-            alt="Choose Icon"
-            className="choose-button-icon"
-          />
-          Use Demo Video
-        </button>
-        <button
-           className="transcription-button"
-              onClick={(e) => {
-                handleTranscription(); // Toggle transcription visibility
-                e.target.classList.toggle("active"); // Toggle active class on the button
-              }}
-            >
+              src={ChooseIcon}
+              alt="Choose Icon"
+              className="choose-button-icon"
+            />
+            Use Demo Video
+          </button>
+          <button
+            className="transcription-button"
+            onClick={(e) => {
+              handleTranscription();
+              e.target.classList.toggle("active");
+            }}
+          >
             <img
-            src={transcriptionIcon}
-            alt="Transcription Icon"
-            className="choose-button-icon"
-          />
-          Transcription
-        </button>
-      </div>
+              src={transcriptionIcon}
+              alt="Transcription Icon"
+              className="choose-button-icon"
+            />
+            Transcription
+          </button>
+        </div>
       </div>
 
       <div className="orange-divider" />

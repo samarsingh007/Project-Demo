@@ -88,14 +88,18 @@ const HomePage = () => {
               analysisResults={analysisResults}
             />
           )}
-          <div className={`transcription-container ${showTranscription ? "visible" : ""}`}>
+          <div
+            className={`transcription-container ${
+              showTranscription ? "visible" : ""
+            }`}
+          >
             {showTranscription && (
-            <TranscriptionWindow
-              videoId={videoId}
-              videoTime={videoTime}
-              seekToTime={seekToTime}
-            />
-          )}
+              <TranscriptionWindow
+                videoId={videoId}
+                videoTime={videoTime}
+                seekToTime={seekToTime}
+              />
+            )}
           </div>
           {videoId && (
             <AIAnalysis

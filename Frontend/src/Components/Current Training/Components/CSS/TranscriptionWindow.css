@@ -22,9 +22,8 @@
   transition: height 0.5s ease-in-out;
 }
 
-/* Add this for expanded state (approx 500px) */
 .transcription-window.expanded {
-  height: 500px; /* or whatever you need */
+  height: 500px;
 }
 
 .transcription-header {

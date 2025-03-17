@@ -12,7 +12,7 @@ const MainContainer = ({ profile }) => {
     <div className="main-wrapper">
       <Sidebar selectedPage={selectedPage} setSelectedPage={setSelectedPage} />
       <div className="content-container">
-        <TopBar profile={profile}/>
+        <TopBar profile={profile} />
         <div
           style={{
             display: selectedPage === "currentTraining" ? "block" : "none",

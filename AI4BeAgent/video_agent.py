@@ -18,6 +18,7 @@ tokenizer = vl_chat_processor.tokenizer
 
 vl_gpt = MultiModalityCausalLM.from_pretrained(model_path, trust_remote_code=True)
 vl_gpt = vl_gpt.to(torch.bfloat16).cuda().eval()
+# vl_gpt = vl_gpt.to(torch.bfloat16).to("cpu").eval()
 
 
 def extract_frames(video_path, interval=10):

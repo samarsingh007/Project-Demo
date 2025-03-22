@@ -13,10 +13,6 @@
   transition: transform 0.3s ease;
 }
 
-.mobile-topbar.hidden {
-  transform: translateY(-100%);
-}
-
 .left-section,
 .right-section {
   display: flex;

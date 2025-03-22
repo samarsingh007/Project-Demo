@@ -1,7 +1,7 @@
 .mobile-bottom-bar {
     position: fixed;
-    bottom: 0;
-    left: 0;
+    bottom: env(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom);    
     width: 100%;
     background: white;
     display: flex;

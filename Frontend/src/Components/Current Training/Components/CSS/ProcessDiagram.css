@@ -104,3 +104,15 @@
     opacity: 1;
   }
 }
+
+@media (max-width: 1024px) {
+  .process-diagram-container{
+  height: 60vh;
+  }
+  .process-illustration-container{
+    height: 100%;
+  }
+  .process-diagram {
+    height: 100%;
+  }
+}

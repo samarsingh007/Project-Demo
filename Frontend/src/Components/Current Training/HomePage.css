@@ -53,7 +53,7 @@
   margin-left: 15px;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   .homepage-container {
     margin: 60px 0;
   }

@@ -111,7 +111,7 @@
   background: transparent;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   .transcription-header h2 {
     font-size: 1rem;
   }  

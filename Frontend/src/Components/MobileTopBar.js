@@ -6,7 +6,7 @@ import UserAvatar from "../Assets/user-avatar.svg";
 import ArrowDown from "../Assets/arrow-down.svg";
 import "./CSS/MobileTopBar.css";
 
-const MobileTopBar = ({ showTopBar, profile, setShowNameModal }) => {
+const MobileTopBar = ({ profile, setShowNameModal }) => {
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef(null);
@@ -36,7 +36,7 @@ const MobileTopBar = ({ showTopBar, profile, setShowNameModal }) => {
   const userEmail = profile?.email || "No Email Found";
 
   return (
-    <div className={`mobile-topbar ${showTopBar ? "" : "hidden"}`}>
+    <div className="mobile-topbar">
       {}
       <div className={`left-section`} ref={notifRef}>
         <img

@@ -96,7 +96,7 @@
 }
 
 
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   .modal {
     width: 70%;
     max-width: 400px;

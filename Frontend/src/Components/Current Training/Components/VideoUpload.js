@@ -271,6 +271,7 @@ const VideoUpload = ({
         {video && (
           <video
             ref={videoRef}
+            playsInline
             width="100%"
             controls
             onLoadedMetadata={handleLoadedMetadata}

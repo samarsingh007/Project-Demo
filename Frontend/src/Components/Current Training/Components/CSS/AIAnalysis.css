@@ -110,7 +110,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   .ai-analysis-section {
     margin: 16px 0 0;
     padding: 0 10px;

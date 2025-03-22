@@ -53,6 +53,7 @@
   gap: 6px;
   background-color: transparent;
   border: none;
+  border-radius: 10px;
   font-size: 1rem;
   color: #818181;
   cursor: pointer;
@@ -61,20 +62,15 @@
   transition: all 0.3s ease;
 }
 
-.demo-button {
-  border-radius: 6px;
-}
-
 .demo-button.active {
-  background-color: #ffa500;
-  color: white;
+  background-color: #ff9d00b8;
+  color: #2f2f2f;
   border: none;
 }
 
 .transcription-button.active {
   background-color: #a7a9edaa;
   color: #2f2f2f;
-  border-radius: 6px;
 }
 
 .orange-divider {
@@ -83,7 +79,7 @@
   border-radius: 1px;
 }
 
-.video-area {
+.video-area, .video-area.active {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -91,7 +87,7 @@
   align-items: center;
   min-height: 400px;
   height: auto;
-  margin: 16px 0 16px 0;
+  margin-top: 15px;
   border-radius: 10px;
 }
 
@@ -133,7 +129,7 @@
 }
 
 video {
-  max-height: 550px;
+  max-width: 1200px;
   border: none;
   border-radius: 5px;
   outline: none;
@@ -176,4 +172,46 @@ video {
   font-weight: bold;
   white-space: nowrap;
   pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .video-area.active{
+    min-height: 0px;
+  }
+
+  .training-video-header {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    padding-bottom: 5px;
+  }
+  
+  .training-video-header h2 {
+    margin: 12px 0;
+    font-size: 1.1rem;
+  }
+  
+  .training-video-buttons {
+    width: 90%;
+  }
+  
+  .choose-button-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .choose-button,
+  .transcription-button,
+  .demo-button {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 12px;
+  }
+
+  video {
+    border-radius: 15px;
+  }
 }

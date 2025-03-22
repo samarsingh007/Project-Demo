@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import "./CSS/TranscriptionWindow.css";
+import TranscriptionModal from "./TranscriptionModalMobile";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const TranscriptionWindow = ({ videoId, videoTime, seekToTime }) => {
+const TranscriptionWindow = ({ videoId, videoTime, seekToTime, isMobile }) => {
   const [allTranscriptions, setAllTranscriptions] = useState([]);
   const [activeTranscription, setActiveTranscription] = useState(null);
   const [expanded, setExpanded] = useState(false);
+  const [showModal, setShowModal] = useState(false); 
 
   const parseTime = (timeString) => {
     const [mm, ss] = timeString.split(":").map(Number);
@@ -97,26 +99,35 @@ const TranscriptionWindow = ({ videoId, videoTime, seekToTime }) => {
     };
   }, [videoId]);
 
+  const handleViewFull = () => {
+    if (isMobile) {
+      setShowModal(true);
+    } else {
+      setExpanded((prev) => !prev);
+    }
+  };
+
   return (
     <div className={`transcription-window ${expanded ? "expanded" : ""}`}>
       <div className="transcription-header">
         <h2>Transcriptions</h2>
-        {!allTranscriptions.length ? null : (
-          <button
-            className="view-full-btn"
-            onClick={() => setExpanded((prev) => !prev)}
-          >
-            {expanded ? "View Less" : "View Full"}
-          </button>
-        )}
+        {allTranscriptions.length > 0 && (
+            <button className="view-full-btn" onClick={handleViewFull}>
+              {isMobile
+                ? "View Full"
+                : expanded
+                ? "View Less"
+                : "View Full"}
+            </button>
+          )}
       </div>
 
-      {expanded ? (
+      {expanded && !isMobile ? (
         allTranscriptions.length > 0 ? (
           allTranscriptions.map((trans, index) => (
             <p key={index}>
               <button
-                className="timestamp-button"
+                className="timestamp-button-trans"
                 onClick={() => seekToTime(parseTime(trans.start))}
               >
                 {formatTime(parseTime(trans.start))}
@@ -133,7 +144,7 @@ const TranscriptionWindow = ({ videoId, videoTime, seekToTime }) => {
             <p>
               {activeTranscription.start && (
                 <button
-                  className="timestamp-button"
+                  className="timestamp-button-trans"
                   onClick={() =>
                     seekToTime(parseTime(activeTranscription.start))
                   }
@@ -146,6 +157,16 @@ const TranscriptionWindow = ({ videoId, videoTime, seekToTime }) => {
           ) : (
             <p>No transcription available at this time</p>
           )}
+
+        {isMobile && showModal && (
+        <TranscriptionModal
+          allTranscriptions={allTranscriptions}
+          onClose={() => setShowModal(false)}
+          parseTime={parseTime}
+          formatTime={formatTime}
+          seekToTime={seekToTime}
+        />
+      )}
         </>
       )}
     </div>

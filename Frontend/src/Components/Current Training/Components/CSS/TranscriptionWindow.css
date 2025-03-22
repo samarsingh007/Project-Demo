@@ -75,14 +75,15 @@
   background-color: #8b8b8b;
 }
 
-.timestamp-button {
-  background-color: transparent;
-  color: #007bff;
-  font-size: 1rem;
-  font-weight: bold;
+.timestamp-button-trans {
+  background: none;
   border: none;
+  color: #007bff;
+  text-decoration: underline;
   cursor: pointer;
-  margin-right: 8px;
+  padding: 8px 8px 0 0;
+  font-weight: bold;
+  font-size: 1rem;
 }
 
 .timestamp-button:hover {
@@ -108,4 +109,42 @@
 }
 .transcription-window::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+@media (max-width: 767px) {
+  .transcription-header h2 {
+    font-size: 1rem;
+  }  
+
+  .view-full-btn {
+    padding: 4px 12px;
+    font-size: 0.8em;
+    margin: 0;
+    border-radius: 20px;
+  }
+
+  .transcription-header {
+    padding: 10px;
+  }
+
+  .transcription-window {
+    padding: 0 10px 5px 10px;
+    overflow-y: hidden;
+    height: 110px;
+    border-radius: 25px;
+  }
+
+  .transcription-window.expanded {
+    overflow-y: auto;
+  }
+
+  .transcription-window p {
+    font-size: 0.9rem;
+    margin: 8px 0;
+    padding: 0 10px;
+  }
+
+  .timestamp-button-trans {
+    font-size: 0.9rem;
+  }
 }

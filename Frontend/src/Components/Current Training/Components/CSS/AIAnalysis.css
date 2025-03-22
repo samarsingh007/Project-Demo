@@ -25,6 +25,7 @@
 }
 
 .ai-table-container {
+  min-height: 60px;
   max-height: 300px;
   overflow: auto;
   transition: max-height 0.5s ease-in-out, height 0.5s ease-in-out;
@@ -47,16 +48,18 @@
   border-bottom: 1px solid #ddd;
 }
 
-.timestamp-button {
+.timestamp-button-analysis {
   background: none;
   border: none;
   color: #007bff;
   text-decoration: underline;
   cursor: pointer;
   padding: 8px;
+  font-weight: bold;
+  font-size: 1rem;
 }
 
-.timestamp-button:hover {
+.timestamp-button-analysis:hover {
   color: #0056b3;
 }
 
@@ -85,6 +88,17 @@
   animation: fadeIn 0.5s ease-in-out;
 }
 
+.read-more-btn {
+  margin-left: 8px;
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.8rem;
+  padding: 2px 4px;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -93,5 +107,74 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 767px) {
+  .ai-analysis-section {
+    margin: 16px 0 0;
+    padding: 0 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 25px;
+    font-family: Arial, sans-serif;
+    color: #333;
+  }
+
+  .ai-header {
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ai-header h3 {
+    font-size: 0.9rem;
+    color: #333;
+  }
+
+  .overall-score {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .ai-table-container.mobile {
+    min-height: 60px;
+    max-height: 3000px;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, height 0.5s ease-in-out;
+  }
+
+  .ai-table-container p {
+    padding: 0 16px;
+    font-size: 0.9rem;
+  }
+
+  .ai-analysis-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+
+  .ai-analysis-table th {
+    text-align: left;
+    padding: 8px;
+    color: #333;
+  }
+
+  .ai-analysis-table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .timestamp-button-analysis {
+    background: none;
+    border: none;
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 8px;
+    font-weight: bold;
+    font-size: 0.9rem;
   }
 }

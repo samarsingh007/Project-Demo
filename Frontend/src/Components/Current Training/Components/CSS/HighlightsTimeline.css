@@ -4,6 +4,7 @@
   border: 3px solid #ccc;
   border-radius: 10px;
   padding: 0 15px;
+  margin-top: 15px;
 }
 
 .timeline {
@@ -38,10 +39,33 @@
   transform: translateX(-50%);
   transition: width 0.2s;
   transition: height 0.2s;
+  border-radius: 10px;
 }
 
 .timeline-marker:hover::before {
   width: 10px;
   height: 40px;
   background: #45a049;
+}
+
+@media (max-width: 767px) {
+  .highlights-timeline-container {
+    height: 40px;
+    border: 2px solid #ccc;
+    border-radius: 20px;
+  }
+
+  .timeline-bar {
+    height: 2px;
+  }
+  
+  .timeline-marker::before {
+    width: 2.5px;
+    height: 25px;
+  }
+  
+  .timeline-marker.active::before {
+    width: 4px;
+    height: 35px;
+  }
 }

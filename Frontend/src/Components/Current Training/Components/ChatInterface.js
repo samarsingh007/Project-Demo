@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./CSS/ChatInterface.css";
 
 import BotLogo from "../../../Assets/main-logo.svg";
-import VoiceIcon from "../../../Assets/voice.svg";
+// import VoiceIcon from "../../../Assets/voice.svg";
 import SLPLogo from "../../../Assets/slp.svg";
 
 const ChatInterface = ({
@@ -12,6 +12,8 @@ const ChatInterface = ({
   setNewVideoUploaded,
   seekToTime,
   videoId,
+  profile,
+  isGuest,
 }) => {
   const [aiMessages, setAiMessages] = useState([]);
   const [slpMessages, setSlpMessages] = useState([]);
@@ -36,9 +38,22 @@ const ChatInterface = ({
   const displayedMessages = chatMode === "ai" ? aiMessages : slpMessages;
 
   useEffect(() => {
+    if (isGuest) {
+      const storedParentName = sessionStorage.getItem("guest_parent_name");
+      const storedChildName = sessionStorage.getItem("guest_child_name");
+
+      if (storedParentName) setParentName(storedParentName);
+      if (storedChildName) setChildName(storedChildName);
+    } else if (profile) {
+      if (profile?.parent_name) setParentName(profile.parent_name);
+      if (profile?.child_name) setChildName(profile.child_name);
+    }
+  }, [profile, isGuest]);
+
+  useEffect(() => {
     if (chatMode === "ai" && aiMessages.length === 0) {
       const defaultAiMsg = {
-        text: "Hi, I'm the AI Assistant! Please upload a video and I'll help you reflect on your interactions.",
+        text: "Hi, I'm a conversational assistant designed to help. Upload a video, then let's reflect on your interactions.",
         sender: senderRole,
       };
       setAiMessages([defaultAiMsg]);
@@ -127,14 +142,18 @@ const ChatInterface = ({
           processedMessages.current.add(videoUploadMessage.text);
           setAiMessages((prev) => [...prev, videoUploadMessage]);
         }
-
-        setContext("askParentName");
-        const askParentMsg = {
-          text: "Please enter the parent's name:",
-          sender: senderRole,
-        };
-        setAiMessages((prev) => [...prev, askParentMsg]);
-        setIsAwaitingResponse(true);
+        if (!parentName.trim() || !childName.trim()) {
+          setContext("askParentName");
+          const askParentMsg = {
+            text: "Please enter the parent's name:",
+            sender: senderRole,
+          };
+          setAiMessages((prev) => [...prev, askParentMsg]);
+          setIsAwaitingResponse(true);
+        } else {
+          setContext("introduction");
+          return;
+        }
       } else {
         setSlpMessages((prev) => [
           ...prev,
@@ -146,17 +165,14 @@ const ChatInterface = ({
       }
       setNewVideoUploaded(false);
     }
-  }, [newVideoUploaded, setNewVideoUploaded, chatMode, senderRole]);
-
-  useEffect(() => {
-    if (aiMessages.length === 0) {
-      const initialMessage = {
-        text: "Hi, I'm a conversational assistant designed to help. Upload a video, then let's reflect on your interactions.",
-        sender: "bot",
-      };
-      setAiMessages([initialMessage]);
-    }
-  }, [aiMessages.length, senderRole]);
+  }, [
+    newVideoUploaded,
+    setNewVideoUploaded,
+    chatMode,
+    senderRole,
+    parentName,
+    childName,
+  ]);
 
   useEffect(() => {
     if (chatBoxRef.current) {
@@ -192,7 +208,7 @@ const ChatInterface = ({
           content: msg.text,
         })
       );
-
+      const userId = profile ? profile.id : null;
       const response = await fetch(`${REACT_APP_API_BASE_URL}/api/ai-chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -202,6 +218,7 @@ const ChatInterface = ({
           context,
           parentName,
           childName,
+          userId,
         }),
       });
 
@@ -238,13 +255,32 @@ const ChatInterface = ({
 
     if (chatMode === "slp") {
       setIsTyping(true);
-      setTimeout(() => {
+      setTimeout(async () => {
         const slpReply = {
           text: "Your message has been shared with the professional. They will respond soon!",
           sender: senderRole,
         };
         setSlpMessages((prev) => [...prev, slpReply]);
         setIsTyping(false);
+        const conversationHistory = [
+          { role: "user-slp", content: userInput },
+          { role: "slp", content: slpReply.text },
+        ];
+
+        try {
+          const userId = profile ? profile.id : null;
+          await fetch(`${REACT_APP_API_BASE_URL}/api/slp-chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              videoId,
+              conversationHistory,
+              userId,
+            }),
+          });
+        } catch (error) {
+          console.error("Error sending SLP chat:", error);
+        }
       }, 1000);
       return;
     }
@@ -279,7 +315,7 @@ const ChatInterface = ({
           content: msg.text,
         }));
         conversationHistory.push({ role: "user", content: userInput });
-
+        const userId = profile ? profile.id : null;
         const response = await fetch(`${REACT_APP_API_BASE_URL}/api/ai-chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -289,6 +325,7 @@ const ChatInterface = ({
             context,
             parentName,
             childName,
+            userId,
           }),
         });
 
@@ -362,7 +399,7 @@ const ChatInterface = ({
             ) : msg.sender === "slp" ? (
               <img src={SLPLogo} alt="SLP" className="slp-avatar" />
             ) : null}
-            <div className="message-content">
+            <div className={`message-content ${msg.sender}`}>
               {msg.sender === "bot" && msg.timestamp && (
                 <span className="message-timestamp">
                   [
@@ -449,9 +486,9 @@ const ChatInterface = ({
           Send
         </button>
 
-        <button className="voice-button">
+        {/* <button className="voice-button">
           <img src={VoiceIcon} alt="Voice" className="voice-icon" />
-        </button>
+        </button> */}
       </div>
     </div>
   );

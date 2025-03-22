@@ -12,7 +12,7 @@
   border-radius: 5px 5px 0 0;
 }
 
-.title-with-dot {
+.title-with-dot-process {
   display: flex;
   align-items: center;
 }
@@ -32,12 +32,12 @@
   color: #333;
 }
 
-.choose-button-icon {
+.choose-button-icon-process {
   width: 22px;
   height: 22px;
 }
 
-.choose-button {
+.choose-button-process {
   display: flex;
   align-items: center;
   gap: 6px;

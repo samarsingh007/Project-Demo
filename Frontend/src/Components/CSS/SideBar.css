@@ -30,7 +30,7 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
 }
 
 .logo-img {
@@ -41,9 +41,12 @@
 
 .brand-text {
   font-weight: 600;
-  font-size: 1rem;
-  color: #333;
+  font-size: 1.2rem;
   transition: opacity 0.2s ease;
+  border: 3px solid #4e0487ba;
+  border-radius: 200px;
+  padding: 5px 10px;
+  color: #4e0487ba;
 }
 
 .sidebar-container.collapsed .brand-text {
@@ -110,4 +113,21 @@
 .menu-items li.active {
   background-color: #5130e51e;
   font-weight: 600;
+}
+
+.sidebar-container.mobile {
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 10px 15px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: white;
+  z-index: 100;
+}
+
+.sidebar-container.mobile .menu-items {
+  display: none; /* Hide menu on mobile */
 }

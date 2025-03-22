@@ -1,7 +1,7 @@
 .auth-container {
   position: relative;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,18 +15,43 @@
 }
 
 .wave-background svg {
-  width: 100%;
-  height: 200%;
+  position: absolute;
+  object-fit: cover;
   display: block;
-
-  transform: translateY(-25%);
+  width: 100%;
+  height: 100%;
 }
 
 .auth-content {
+  margin-top: 90px;
   position: relative;
   z-index: 10;
   background: transparent;
   text-align: center;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  opacity: 0;
+  animation: fadeInZoom 1s ease-in-out forwards;
+}
+
+@keyframes fadeInZoom {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInZoomPAC {
+  from {
+    transform: translateY(-20px) scale(0.85);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
 }
 
 .auth-form {
@@ -43,6 +68,7 @@
   padding: 25px;
   font-size: 3rem;
   color: #4e0487ba;
+  animation: fadeInZoomPAC 0.7s ease-in-out forwards;
 }
 
 .auth-content h2 {
@@ -127,9 +153,9 @@
 }
 
 .auth-content .toggle-auth {
-  margin-top: 1rem;
   cursor: pointer;
   color: #5030e5;
+  margin: 1rem 0 0 0;
 }
 
 .logo-container {
@@ -153,7 +179,7 @@
   border-radius: 15px;
   cursor: pointer;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 1.5rem;
   transition: 0.3s;
 }
 
@@ -170,6 +196,14 @@
   border-radius: 15px;
   color: red;
   text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.guest-warning.show {
+  opacity: 1;
+  visibility: visible;
 }
 
 .continue-button {
@@ -186,4 +220,57 @@
 
 .continue-button:hover {
   background: darkred;
+}
+
+@media (max-width: 1023px) {
+  .auth-content {
+    max-width: 500px;
+  }
+
+  .auth-content h1 {
+    margin-top: 30px;
+    font-size: 2rem;
+  }
+
+  .input-box {
+    padding: 14px;
+  }
+
+  .role-section {
+    flex-direction: row;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 767px) {
+  .logo-container img {
+    width: 150px;
+  }
+  .auth-content {
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .auth-content h1 {
+    margin-top: 30px;
+    font-size: 1.5rem;
+    padding: 15px;
+  }
+
+  .input-box {
+    padding: 12px;
+  }
+
+  .login-button button {
+    font-size: 1rem;
+  }
+
+  .guest-button {
+    font-size: 0.9rem;
+  }
+
+  .role-section {
+    gap: 10px;
+    margin: 5px -30px;
+  }
 }

@@ -84,15 +84,15 @@ const ProcessDiagram = ({ videoTime }) => {
     <div className="process-diagram-container">
       {}
       <div className="process-diagram-header">
-        <div className="title-with-dot">
+        <div className="title-with-dot-process">
           <span className="purple-dot" />
           <h2>Process Diagram</h2>
         </div>
-        <button className="choose-button" onClick={handleChooseClick}>
+        <button className="choose-button-process" onClick={handleChooseClick}>
           <img
             src={ChooseIcon}
             alt="Choose Icon"
-            className="choose-button-icon"
+            className="choose-button-icon-process"
           />
           Choose
         </button>
@@ -100,7 +100,6 @@ const ProcessDiagram = ({ videoTime }) => {
 
       <div className="purple-divider" />
 
-      {}
       <div className="process-illustration-container">
         <div className="image-wrapper">
           <img
@@ -108,7 +107,6 @@ const ProcessDiagram = ({ videoTime }) => {
             alt="Process Diagram"
             className="process-diagram"
           />
-          {}
           {currentStep !== null && (
             <div
               className={`pulsating-circle ${
@@ -122,8 +120,6 @@ const ProcessDiagram = ({ videoTime }) => {
           )}
         </div>
       </div>
-
-      {}
       <input
         ref={fileInputRef}
         type="file"

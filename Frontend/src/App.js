@@ -8,12 +8,24 @@ import {
 import MainContainer from "./Components/MainContainer";
 import AuthPage from "./Components/AuthPage";
 import supabase from "./supabaseClient";
+import ResetPassword from "./Components/ResetPassword";
+import NameInputModal from "./Components/NameInputModal"
 
 function App() {
   const [session, setSession] = useState(undefined);
   const [isGuest, setIsGuest] = useState(false);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [parentName, setParentName] = useState("");
+  const [childName, setChildName] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const getSession = async () => {
@@ -53,10 +65,18 @@ function App() {
       .eq("id", userId)
       .single();
 
-    if (!error) {
-      setProfile(userProfile);
-    }
+      if (!error) {
+        setProfile(userProfile);
+        if (!userProfile?.parent_name || !userProfile?.child_name) {
+          setShowNameModal(true);
+        }
+      }
   };
+  useEffect(() => {
+    if (isGuest && (!parentName || !childName)) {
+      setShowNameModal(true);
+    }
+  }, [isGuest, parentName, childName]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -64,8 +84,18 @@ function App() {
 
   return (
     <Router>
+      {showNameModal && (
+        <NameInputModal
+          userId={session?.user?.id}
+          setProfile={setProfile}
+          setShowNameModal={setShowNameModal}
+          setParentName={setParentName}
+          setChildName={setChildName}
+          isGuest={isGuest}
+          profile={profile}
+        />
+      )}
       <Routes>
-        {}
         <Route
           path="/"
           element={
@@ -76,19 +106,18 @@ function App() {
             )
           }
         />
-        {}
         <Route path="/login" element={<AuthPage setIsGuest={setIsGuest} />} />
-        {}
         <Route
           path="/Project-Demo"
           element={
             session || isGuest ? (
-              <MainContainer profile={profile} />
+              <MainContainer profile={profile} setShowNameModal={setShowNameModal} isGuest={isGuest} isMobile={isMobile}/>
             ) : (
               <Navigate to="/login" />
             )
           }
         />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   );

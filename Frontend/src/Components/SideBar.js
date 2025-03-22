@@ -22,7 +22,7 @@ const Sidebar = ({ selectedPage, setSelectedPage }) => {
             <img src={MainLogo} alt="Logo" className="logo-img" />
           </span>
           {!isCollapsed && (
-            <span className="brand-text">Parent's AI Coach (PAC)</span>
+            <span className="brand-text">PAC.AI</span>
           )}
         </div>
 

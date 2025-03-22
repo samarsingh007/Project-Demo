@@ -11,3 +11,21 @@
   flex-direction: column;
   overflow: hidden;
 }
+
+@media (max-width: 767px) {
+  .main-wrapper {
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    margin: 0;
+  }
+  
+  .content-container {
+    width: 100%;
+    display: flex;
+    flex: 1;
+    padding: 10px;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}

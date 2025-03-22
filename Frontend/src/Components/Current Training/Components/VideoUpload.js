@@ -13,6 +13,7 @@ const VideoUpload = ({
   videoDuration,
   seekToTime,
   handleTranscription,
+  profile,
 }) => {
   const [video, setVideo] = useState(null);
   const videoRef = useRef(null);
@@ -20,15 +21,19 @@ const VideoUpload = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isDemoActive, setIsDemoActive] = useState(false);
+  const [isTranscriptionActive, setIsTranscriptionActive] = useState(false);
 
   const handlePlayDemoVideo = async () => {
     setIsDemoActive((prev) => !prev);
     try {
       setVideo(process.env.PUBLIC_URL + "/demo/demo.MOV");
-
+      const userId = profile ? profile.id : null;
       const response = await fetch(`${REACT_APP_API_BASE_URL}/api/start-demo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+        }),
       });
       const data = await response.json();
 
@@ -45,12 +50,14 @@ const VideoUpload = ({
   const handleVideoUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+    const userId = profile ? profile.id : null;
 
     const previewURL = URL.createObjectURL(file);
     setVideo(previewURL);
 
     const formData = new FormData();
     formData.append("video", file);
+    formData.append("userId", userId);
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -223,13 +230,13 @@ const VideoUpload = ({
               alt="Choose Icon"
               className="choose-button-icon"
             />
-            Use Demo Video
+            Demo Video
           </button>
           <button
-            className="transcription-button"
-            onClick={(e) => {
+            className={`transcription-button ${isTranscriptionActive ? "active" : ""}`}
+            onClick={() => {
               handleTranscription();
-              e.target.classList.toggle("active");
+              setIsTranscriptionActive((prev) => !prev);
             }}
           >
             <img
@@ -245,7 +252,7 @@ const VideoUpload = ({
       <div className="orange-divider" />
 
       <div
-        className="video-area"
+        className={`video-area ${video ? "active" : ""}`}
         onClick={() => {
           if (!video) {
             handleChooseClick();

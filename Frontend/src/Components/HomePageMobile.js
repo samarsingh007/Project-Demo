@@ -1,24 +1,51 @@
-import React, { useState, useEffect } from "react";
-import ChatInterface from "./Components/ChatInterface";
-import MyProgress from "./Components/MyProgress";
-import VideoUpload from "./Components/VideoUpload";
-// import FidelityScore from "./Components/FidelityScore";
-import TranscriptionWindow from "./Components/TranscriptionWindow";
-import ProcessDiagram from "./Components/ProcessDiagram";
-import AIAnalysis from "./Components/AIAnalysis";
-import HighlightsTimeline from "./Components/HighlightsTimeline";
+import React, { useState, useEffect, useRef } from "react";
+import MobileTopBar from "./MobileTopBar";
+import MobileBottomBar from "./MobileBottomBar";
+import "./CSS/HomePageMobile.css";
+import ChatInterface from "./Current Training/Components/ChatInterface";
+import AIAnalysis from "./Current Training/Components/AIAnalysis";
+import ProcessDiagram from "./Current Training/Components/ProcessDiagram";
+import VideoUpload from "./Current Training/Components/VideoUpload";
+import HighlightsTimeline from "./Current Training/Components/HighlightsTimeline";
+import TranscriptionWindow from "./Current Training/Components/TranscriptionWindow";
 import { io } from "socket.io-client";
-import "./HomePage.css";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const HomePage = ({ profile, isGuest }) => {
+const HomePageMobile = ({ profile, setShowNameModal, isGuest, isMobile }) => {
+  const contentRef = useRef(null);
+  const [showTopBar, setShowTopBar] = useState(true);
+  const [selectedPage, setSelectedPage] = useState("chat");
   const [videoTime, setVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
   const [videoId, setVideoId] = useState(null);
   const [analysisResults, setAnalysisResults] = useState([]);
   const [showTranscription, setShowTranscription] = useState(false);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+
+  useEffect(() => {
+    const SCROLL_THRESHOLD = 60;
+  
+    const handleScroll = () => {
+      const currentScrollPos = contentRef.current.scrollTop;
+      const diff = Math.abs(currentScrollPos - prevScrollPos);
+  
+      if (diff < SCROLL_THRESHOLD) return;
+  
+      const isScrollingDown = currentScrollPos > prevScrollPos;
+      setShowTopBar(!isScrollingDown);
+      setPrevScrollPos(currentScrollPos);
+    };
+  
+    const container = contentRef.current;
+    container.addEventListener("scroll", handleScroll);
+  
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, [prevScrollPos]);
+  
 
   const handleVideoTimeUpdate = (time, duration) => {
     setVideoTime(time);
@@ -52,9 +79,15 @@ const HomePage = ({ profile, isGuest }) => {
   };
 
   return (
-    <div className="homepage-container">
-      <div className="top-section">
-        <div className="top-left">
+    <div className="home-mobile-wrapper">
+      <MobileTopBar showTopBar={showTopBar} profile={profile} setShowNameModal={setShowNameModal} />
+      <div className="mobile-content" ref={contentRef} style={{marginTop: showTopBar ? "60px" : "5px" }}>
+        <div
+          className="chat-container-mobile fade-in"
+          style={{
+            display: selectedPage === "chat" ? "block" : "none",
+          }}
+        >
           <ChatInterface
             videoTime={videoTime}
             videoDuration={videoDuration}
@@ -66,12 +99,12 @@ const HomePage = ({ profile, isGuest }) => {
             isGuest={isGuest}
           />
         </div>
-        <div className="top-right">
-          <MyProgress />
-        </div>
-      </div>
-      <div className="bottom-container">
-        <div className="bottom-left">
+        <div
+          className="review-container-mobile fade-in"
+          style={{
+            display: selectedPage === "review" ? "block" : "none",
+          }}
+        >
           <VideoUpload
             onVideoTimeUpdate={handleVideoTimeUpdate}
             setNewVideoUploaded={setNewVideoUploaded}
@@ -100,6 +133,7 @@ const HomePage = ({ profile, isGuest }) => {
                 videoId={videoId}
                 videoTime={videoTime}
                 seekToTime={seekToTime}
+                isMobile={isMobile}
               />
             )}
           </div>
@@ -108,20 +142,27 @@ const HomePage = ({ profile, isGuest }) => {
               analysisResults={analysisResults}
               videoId={videoId}
               seekToTime={seekToTime}
+              isMobile={isMobile}
             />
           )}
-          {/* <FidelityScore
-            analysisResults={analysisResults}
-            videoDuration={videoDuration}
-            currentTime={videoTime}
-          /> */}
         </div>
-        <div className="bottom-right">
-          <ProcessDiagram videoTime={videoTime} />
+        <div
+          className="diagram-container-mobile fade-in"
+          style={{
+            display: selectedPage === "diagram" ? "block" : "none",
+          }}
+        >
+          {" "}
+          <ProcessDiagram />
         </div>
       </div>
+      <MobileBottomBar
+        selectedPage={selectedPage}
+        setSelectedPage={setSelectedPage}
+        setShowNameModal={setShowNameModal}
+      />
     </div>
   );
 };
 
-export default HomePage;
+export default HomePageMobile;

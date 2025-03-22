@@ -12,7 +12,7 @@ const AuthPage = ({ setIsGuest }) => {
   const [message, setMessage] = useState("");
   const [showGuestWarning, setShowGuestWarning] = useState(false);
   const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -21,37 +21,125 @@ const AuthPage = ({ setIsGuest }) => {
     setMessage("");
 
     if (isSignUp) {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
 
-      if (error) {
-        setError(error.message);
-      } else {
-        setMessage("Check your email for a confirmation link!");
+        console.log("Sign-up response:", JSON.stringify(data, null, 2));
+
+        if (error) {
+          console.error("Sign-up error:", error.message);
+          setError(error.message);
+          return;
+        }
 
         if (data?.user) {
-          console.log("User signed up:", data.user);
+          console.log("User data:", JSON.stringify(data.user, null, 2));
 
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .insert([{ id: data.user.id, name, location, email }]);
+          if (data.user.identities && data.user.identities.length > 0) {
+            console.log(
+              "✅ Sign-up successful! Check your email for confirmation."
+            );
+            setMessage("Check your email for a confirmation link!");
 
-          if (profileError) {
-            console.error("Error saving profile:", profileError.message);
+            const { error: profileError } = await supabase
+              .from("profiles")
+              .insert([{ id: data.user.id, name, email }]);
+
+            if (profileError) {
+              console.error("Error saving profile:", profileError.message);
+            }
+          } else {
+            console.warn(
+              "⚠️ Email address is already taken. Attempting sign-in..."
+            );
+
+            const { error: signInError } =
+              await supabase.auth.signInWithPassword({
+                email,
+                password,
+              });
+
+            if (signInError) {
+              console.error("❌ Sign-in failed:", signInError.message);
+              setError("Email already exists. Please try signing in.");
+            } else {
+              console.log("✅ Successfully signed in existing user!");
+              setMessage("Welcome back! You are now signed in.");
+              navigate("/Project-Demo");
+            }
           }
         }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+        setError("An unexpected error occurred. Please try again.");
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          setError(error.message);
+        } else {
+          setMessage("Login successful!");
+          navigate("/Project-Demo");
+        }
+      } catch (err) {
+        console.error("Unexpected sign-in error:", err);
+        setError("An unexpected error occurred during sign-in.");
+      }
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setError("");
+    setMessage("");
+
+    if (!email) {
+      setError("Please enter your email to reset your password.");
+      return;
+    }
+
+    try {
+      const { data: existingUser } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email)
+        .single();
+
+      if (!existingUser) {
+        setError(
+          "No account found with this email. Would you like to sign up instead?"
+        );
+        return;
+      }
+
+      const redirectUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000/reset-password"
+          : "https://ai4behavior.xlabub.com/reset-password";
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
       });
 
       if (error) {
+        console.error("Password reset error:", error.message);
         setError(error.message);
       } else {
-        setMessage("Login successful!");
-        navigate("/Project-Demo");
+        setMessage("Password reset link sent! Check your email.");
       }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setError("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -73,6 +161,7 @@ const AuthPage = ({ setIsGuest }) => {
         <svg
           id="svg"
           viewBox="0 0 1440 690"
+          preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
           className="transition duration-300 ease-in-out delay-150"
         >
@@ -137,13 +226,7 @@ const AuthPage = ({ setIsGuest }) => {
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-              />
-              <input
-                className="input-box"
-                type="Location"
-                placeholder="Location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAuth()}
               />
             </>
           )}
@@ -154,36 +237,74 @@ const AuthPage = ({ setIsGuest }) => {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                if (showForgotPassword) {
+                  handleForgotPassword();
+                } else {
+                  handleAuth();
+                }
+              }
+            }}
           />
-          <input
-            className="input-box"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          {!showForgotPassword && (
+            <input
+              className="input-box"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAuth()}
+            />
+          )}
           <div className="login-button">
-            <button onClick={handleAuth}>
-              {isSignUp ? "Create Account" : "Login"}
-            </button>
-            <p onClick={() => setIsSignUp(!isSignUp)} className="toggle-auth">
-              {isSignUp
-                ? "Already have an account? Sign in"
-                : "Need an account? Sign up"}
-            </p>
+            {!showForgotPassword ? (
+              <button onClick={handleAuth}>
+                {isSignUp ? "Create Account" : "Login"}
+              </button>
+            ) : (
+              <button onClick={handleForgotPassword}>Reset Password</button>
+            )}
           </div>
+
+          {!isSignUp && !showForgotPassword && (
+            <p
+              onClick={() => setShowForgotPassword(true)}
+              className="toggle-auth"
+            >
+              Forgot Password?
+            </p>
+          )}
+
+          {showForgotPassword && (
+            <p
+              onClick={() => setShowForgotPassword(false)}
+              className="toggle-auth"
+            >
+              Back to Sign In
+            </p>
+          )}
+
+          <p
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setShowForgotPassword(false);
+            }}
+            className="toggle-auth"
+          >
+            {isSignUp
+              ? "Already have an account? Sign in"
+              : "Need an account? Sign up"}
+          </p>
           <button className="guest-button" onClick={continueWithoutSignIn}>
             Continue without Sign In
           </button>
-
-          {showGuestWarning && (
-            <div className="guest-warning">
-              <p>⚠️ Your session will not be saved. Do you want to continue?</p>
-              <button className="continue-button" onClick={proceedAsGuest}>
-                Continue
-              </button>
-            </div>
-          )}
+          <div className={`guest-warning ${showGuestWarning ? "show" : ""}`}>
+            <p>⚠️ Your session will not be saved. Do you want to continue?</p>
+            <button className="continue-button" onClick={proceedAsGuest}>
+              Continue
+            </button>
+          </div>
         </div>
       </div>
     </div>

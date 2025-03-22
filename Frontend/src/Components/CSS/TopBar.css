@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: right;
-  gap: 40px;
+  gap: 10px;
   height: 75px;
   font-family: sans-serif;
   position: relative;
@@ -11,7 +11,36 @@
 .notification-section {
   display: flex;
   align-items: center;
+  position: relative;
   gap: 20px;
+  transition: all 0.2s ease-in-out;
+}
+
+.notification-section.open {
+  background-color: #ebebeb;
+  border-radius: 10px;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  color: #333;
+  background: #fff;
+  border: 1px solid #dcdcdc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 15px;
+  padding: 10px;
+  min-width: 200px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  visibility: hidden;
+}
+
+.notification-dropdown.open {
+  opacity: 1;
+  visibility: visible;
 }
 
 .profile-section {
@@ -19,6 +48,13 @@
   align-items: center;
   cursor: pointer;
   position: relative;
+  padding: 10px 15px;
+  border-radius: 15px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.profile-section.open {
+  background-color: #ebebeb;
 }
 
 .icon-container {
@@ -28,6 +64,9 @@
 .topbar-icon {
   width: 25px;
   height: 25px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 .notification-dot {
@@ -41,21 +80,10 @@
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
 }
 
-.user-info {
-  display: flex;
-  flex-direction: column;
-  text-align: right;
-  margin-right: 20px;
-}
-
 .user-name {
-  font-weight: 500;
+  font-size: 1.2rem;
   color: #333;
-}
-
-.user-location {
-  font-size: 0.85rem;
-  color: #888;
+  margin-right: 10px;
 }
 
 .user-avatar {
@@ -69,18 +97,31 @@
   width: 20px;
   height: 20px;
   margin-left: 10px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.arrow-down.open {
+  transform: rotate(180deg);
 }
 
 .dropdown-menu {
   position: absolute;
-  top: 60px;
+  top: 70px;
   right: 0;
   background: #fff;
-  border: 1px solid #eee;
+  border: 1px solid #dcdcdc;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
+  border-radius: 15px;
   padding: 10px;
   min-width: 150px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  visibility: hidden;
+}
+
+.dropdown-menu.open {
+  opacity: 1;
+  visibility: visible;
 }
 
 .dropdown-item {
@@ -89,7 +130,7 @@
   padding: 8px 12px;
   cursor: pointer;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 1rem;
   border: none;
   background: none;
   color: #333;
@@ -97,10 +138,11 @@
 
 .dropdown-item:hover {
   background-color: #f1f1f1;
+  border-radius: 10px;
 }
 
 .email-text {
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 8px;
   pointer-events: none;
 }

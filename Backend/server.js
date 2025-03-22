@@ -9,6 +9,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const { spawn } = require("child_process");
 const { Pool } = require("pg");
+const { validate: isUuid } = require("uuid");
 require("dotenv").config();
 // const Minio = require("minio");
 
@@ -215,37 +216,68 @@ function analyzeVideoPython(
 }
 
 app.post("/api/start-demo", async (req, res) => {
+  const { userId } = req.body;
   const demoId = "demo-video-id";
+  const sessionId = uuidv4();
   const localDemoPath = path.join(__dirname, "demo", "demo.MOV");
-  const outputCsv = path.join(__dirname, "uploads", `${demoId}.csv`);
+  const outputCsv = path.join(__dirname, "uploads", `${sessionId}.csv`);
 
-  transcriptionStore.set(demoId, {
+  transcriptionStore.set(sessionId, {
+    demoId,
+    userId,
     status: "processing",
     csvPath: outputCsv,
     transcriptions: [],
     analysisSegments: [],
   });
 
+  if (userId) {
+    await pool.query(
+      `INSERT INTO sessions (id, user_id, status, analysis_csv_path, video_url, is_demo)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+      [sessionId, userId, "processing", outputCsv, null, true]
+    );
+  }
+
   try {
-    analyzeVideoPython(demoId, localDemoPath, outputCsv, io, true).then(() => {
-      demoAnalysisMessages.forEach((message, index) => {
-        setTimeout(() => {
-          const analysisData = { videoId: demoId, ...message };
-          transcriptionStore.get(demoId).analysisSegments.push(analysisData);
-          io.emit("analysis_progress", analysisData);
-        }, index * 3000);
-        setTimeout(() => {
-          transcriptionStore.set(demoId, {
-            ...transcriptionStore.get(demoId),
-            status: "completed",
-          });
-          io.emit("analysis_complete", { videoId: demoId, csvPath: outputCsv });
-        }, demoAnalysisMessages.length * 3000 + 2000);
-      });
-    });
+    analyzeVideoPython(sessionId, localDemoPath, outputCsv, io, true).then(
+      () => {
+        demoAnalysisMessages.forEach((message, index) => {
+          setTimeout(() => {
+            const analysisData = { videoId: sessionId, ...message };
+            transcriptionStore
+              .get(sessionId)
+              .analysisSegments.push(analysisData);
+            io.emit("analysis_progress", analysisData);
+          }, index * 3000);
+          setTimeout(() => {
+            transcriptionStore.set(sessionId, {
+              ...transcriptionStore.get(sessionId),
+              status: "completed",
+            });
+            if (userId) {
+              pool.query(
+                `UPDATE sessions SET status = 'completed', updated_at = now() WHERE id = $1`,
+                [sessionId]
+              );
+            }
+            io.emit("analysis_complete", {
+              videoId: sessionId,
+              csvPath: outputCsv,
+            });
+          }, demoAnalysisMessages.length * 3000 + 2000);
+        });
+      }
+    );
   } catch (error) {
     console.error("Error processing demo video:", error);
-    transcriptionStore.set(demoId, { status: "failed" });
+    transcriptionStore.set(sessionId, { status: "failed" });
+    if (userId) {
+      await pool.query(
+        `UPDATE sessions SET status = 'failed', updated_at = now() WHERE id = $1`,
+        [sessionId]
+      );
+    }
   }
   // transcriptionStore.set(demoId, {
   //   status: "processing",
@@ -269,7 +301,7 @@ app.post("/api/start-demo", async (req, res) => {
   //     });
   //   });
 
-  res.json({ videoId: demoId });
+  res.json({ videoId: sessionId });
 });
 
 // app.get("/api/get-presigned-url", async (req, res) => {
@@ -365,10 +397,44 @@ app.post("/api/start-demo", async (req, res) => {
 
 app.post("/api/ai-chat", async (req, res) => {
   try {
-    const { videoId, conversationHistory, context, parentName, childName } =
-      req.body;
-    let userMessage = req.body.userMessage;
+    const {
+      videoId,
+      conversationHistory,
+      context,
+      parentName,
+      childName,
+      userId,
+    } = req.body;
+    if (userId) {
+      const existingRows = await pool.query(
+        `SELECT 1 FROM conversation_history WHERE session_id = $1 LIMIT 1`,
+        [videoId]
+      );
 
+      if (existingRows.rows.length === 0) {
+        for (const msg of conversationHistory) {
+          if (userId) {
+            await pool.query(
+              `
+            INSERT INTO conversation_history (session_id, role, message)
+            VALUES ($1, $2, $3)
+          `,
+              [videoId, msg.role, msg.content]
+            );
+          }
+        }
+      } else {
+        const latestMessage =
+          conversationHistory[conversationHistory.length - 1];
+        await pool.query(
+          `
+            INSERT INTO conversation_history (session_id, role, message)
+            VALUES ($1, $2, $3)
+          `,
+          [videoId, latestMessage.role, latestMessage.content]
+        );
+      }
+    }
     const analysisData = [];
     const storeData = transcriptionStore.get(videoId);
 
@@ -449,6 +515,15 @@ app.post("/api/ai-chat", async (req, res) => {
     );
 
     let botReply = openaiResponse.data.choices[0].message.content;
+    if (userId) {
+      await pool.query(
+        `
+        INSERT INTO conversation_history (session_id, role, message)
+        VALUES ($1, $2, $3)
+      `,
+        [videoId, "assistant", botReply]
+      );
+    }
 
     return res.json({ botReply });
   } catch (error) {
@@ -463,14 +538,50 @@ app.get("/api/chat/:context", (req, res) => {
   res.json(response);
 });
 
+app.post("/api/slp-chat", async (req, res) => {
+  try {
+    const { videoId, conversationHistory, userId } = req.body;
+
+    if (userId) {
+      const values = conversationHistory
+        .filter((msg) => msg.role === "slp" || msg.role === "user-slp")
+        .map((msg) => `('${videoId}', '${msg.role}', '${msg.content}')`)
+        .join(", ");
+
+      if (values.length > 0) {
+        await pool.query(`
+        INSERT INTO conversation_history (session_id, role, message)
+        VALUES ${values}
+      `);
+      }
+    }
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Error in /api/slp-chat:", error);
+    return res.status(500).json({ error: "Failed to store SLP chat" });
+  }
+});
+
 app.post("/upload", upload.single("video"), async (req, res) => {
   try {
+    let userId = req.body.userId;
+    if (!isUuid(userId)) {
+      userId = null;
+    }
     const videoPath = req.file.path;
     const videoId = uuidv4();
     const videoUrl = `http://${HOST}:${PORT}/uploads/${req.file.filename}`;
     const outputCsv = `uploads/${videoId}.csv`;
 
+    if (userId !== null) {
+      await pool.query(
+        `INSERT INTO sessions (id, user_id, status, analysis_csv_path, video_url, is_demo)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+        [videoId, userId, "processing", outputCsv, videoUrl, false]
+      );
+    }
     transcriptionStore.set(videoId, {
+      userId,
       videoUrl,
       transcriptions: [],
       csvPath: outputCsv,
@@ -485,6 +596,16 @@ app.post("/upload", upload.single("video"), async (req, res) => {
           ...transcriptionStore.get(videoId),
           status: "completed",
         });
+        if (userId !== null) {
+          pool.query(
+            `
+          UPDATE sessions
+          SET status = 'completed', updated_at = now()
+          WHERE id = $1
+        `,
+            [videoId]
+          );
+        }
         io.emit("analysis_complete", { videoId, csvPath: outputCsv });
         fs.unlink(videoPath, (err) => {
           if (err) console.error(`Failed to delete ${videoPath}:`, err);
@@ -497,6 +618,16 @@ app.post("/upload", upload.single("video"), async (req, res) => {
           ...transcriptionStore.get(videoId),
           status: "failed",
         });
+        if (userId !== null) {
+          pool.query(
+            `
+          UPDATE sessions
+          SET status = 'failed', updated_at = now()
+          WHERE id = $1
+        `,
+            [videoId]
+          );
+        }
       });
   } catch (error) {
     console.error("Error during video upload:", error.message);

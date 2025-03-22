@@ -8,6 +8,7 @@ const HighlightsTimeline = ({
   analysisResults,
 }) => {
   const [fidelityMessages, setFidelityMessages] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(null);
 
   const parseTime = (timeString) => {
     const [mm, ss] = timeString.split(":").map(Number);
@@ -47,9 +48,11 @@ const HighlightsTimeline = ({
           return (
             <div
               key={index}
-              className="timeline-marker"
+              className={`timeline-marker ${activeIndex === index ? "active" : ""}`}
               style={{ left: `${position}%` }}
-              onClick={() => seekToTime(beginSeconds)}
+              onClick={() => {seekToTime(beginSeconds);
+                setActiveIndex(index);
+            }}
               title={`Go to ${formatTime(beginSeconds)}`}
             />
           );

@@ -23,7 +23,7 @@ const ChatInterface = ({
   const [senderRole, setSenderRole] = useState("bot");
   const [messages, setMessages] = useState([]);
   const [messageQueue, setMessageQueue] = useState([]);
-  const [context, setContext] = useState();
+  const [context, setContext] = useState("base");
   const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [parentName, setParentName] = useState("");
@@ -71,7 +71,7 @@ const ChatInterface = ({
   useEffect(() => {
     if (chatMode === "ai" && aiMessages.length === 0) {
       const defaultAiMsg = {
-        text: "Hi, I'm a conversational assistant designed to help. Upload a video, then let's reflect on your interactions.",
+        text: "Hi, I'm a conversational assistant designed to help. Upload a video in the 'Review' tab, then let's reflect on your interactions.",
         sender: senderRole,
       };
       setAiMessages([defaultAiMsg]);
@@ -324,7 +324,7 @@ const ChatInterface = ({
       setChildName(userInput);
       setContext("introduction");
       return;
-    } else if (context === "LLM") {
+    } else if (context === "base" || context === "LLM") {
       try {
         setIsTyping(true);
 

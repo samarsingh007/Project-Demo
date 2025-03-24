@@ -418,7 +418,7 @@ app.post("/api/ai-chat", async (req, res) => {
       childName,
       userId,
     } = req.body;
-    if (userId) {
+    if (userId && videoId) {
       const existingRows = await pool.query(
         `SELECT 1 FROM conversation_history WHERE session_id = $1 LIMIT 1`,
         [videoId]
@@ -426,7 +426,7 @@ app.post("/api/ai-chat", async (req, res) => {
 
       if (existingRows.rows.length === 0) {
         for (const msg of conversationHistory) {
-          if (userId) {
+          if (userId && videoId) {
             await pool.query(
               `
             INSERT INTO conversation_history (session_id, role, message)
@@ -461,6 +461,10 @@ app.post("/api/ai-chat", async (req, res) => {
     const systemMessage = `
     You are an expert Speech-Language Pathology (SLP) assistant guiding parents through a structured coaching session.
     Your goal is to guide the user through this structured dialogue:
+
+    0️ Base Phase
+    - If this is the start of the session and no video has been uploaded yet, guide the user to upload a video in the 'Review' tab before continuing.
+    - Do not proceed with self-reflection or feedback until a video is available - you would be able to see 'A new video has successfully been uploaded' in the chat history.
   
     1️ Self-Reflection Phase
        - Ask: "What do you think went well during your time with ${child}?"
@@ -508,7 +512,7 @@ app.post("/api/ai-chat", async (req, res) => {
       .replace(/```[\s\S]*?```/g, "")
       .replace(/\\n/g, "\n");
 
-    if (userId) {
+    if (userId && videoId) {
       await pool.query(
         `
         INSERT INTO conversation_history (session_id, role, message)
@@ -646,7 +650,7 @@ app.post("/api/slp-chat", async (req, res) => {
   try {
     const { videoId, conversationHistory, userId } = req.body;
 
-    if (userId) {
+    if (userId && videoId) {
       const values = conversationHistory
         .filter((msg) => msg.role === "slp" || msg.role === "user-slp")
         .map((msg) => `('${videoId}', '${msg.role}', '${msg.content}')`)

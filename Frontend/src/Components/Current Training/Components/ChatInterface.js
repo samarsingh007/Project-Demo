@@ -4,6 +4,7 @@ import "./CSS/ChatInterface.css";
 import BotLogo from "../../../Assets/main-logo.svg";
 // import VoiceIcon from "../../../Assets/voice.svg";
 import SLPLogo from "../../../Assets/slp.svg";
+import { io } from "socket.io-client";
 
 const ChatInterface = ({
   videoTime,
@@ -36,6 +37,23 @@ const ChatInterface = ({
   const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   const displayedMessages = chatMode === "ai" ? aiMessages : slpMessages;
+
+  useEffect(() => {
+    const socket = io(REACT_APP_API_BASE_URL, {});
+
+    socket.on("new_assistant_message", (data) => {
+      if (data.videoId === videoId) {
+        setAiMessages((prev) => [
+          ...prev,
+          { text: data.message, sender: "bot" },
+        ]);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [videoId, REACT_APP_API_BASE_URL]);
 
   useEffect(() => {
     if (isGuest) {

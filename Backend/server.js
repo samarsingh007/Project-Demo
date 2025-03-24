@@ -41,7 +41,11 @@ const allowedOrigins = [
 
 // const FRONTEND_PORT = process.env.FRONTEND_PORT;
 // const FRONTEND_URL = `http://${HOST}:${FRONTEND_PORT}`;
-// const allowedOrigins = [FRONTEND_URL, "https://ai4behavior.xlabub.com","https://backend_ai4behavior.xlabub.com"];
+// const allowedOrigins = [
+//   FRONTEND_URL,
+//   "https://ai4behavior.xlabub.com",
+//   "https://backend_ai4behavior.xlabub.com",
+// ];
 
 app.use(
   cors({
@@ -105,46 +109,55 @@ const upload = multer({
 // });
 
 const transcriptionStore = new Map();
+const feedbackPending = {};
+analysisCompleted = {};
 
 const demoAnalysisMessages = [
   {
     "Begin-End": "01:28-01:35",
+    Strategy: "Modeling",
     "Fidelity Score": "3",
     "AI Reasoning":
       "Pay closer attention to non-verbal cues, such as signing or gestures, especially when your child is engaged in activities that may make verbal communication difficult, like being inside a tunnel.",
   },
   {
     "Begin-End": "01:36-01:42",
+    Strategy: "Modeling",
     "Fidelity Score": "4",
     "AI Reasoning":
       "You're effectively following the intervention flowchart steps by establishing joint attention, presenting your strategy, and waiting for at least 3 seconds.\n\nAfter repeating the question, your response should branch into two outcomes: if you receive a correct response, acknowledge and reinforce it; if no response or an incorrect response occurs, repeat the exact question once more. This structured repetition helps the child understand and engage while providing clarity in your feedback process.",
   },
   {
     "Begin-End": "01:43-01:48",
+    Strategy: "Modeling",
     "Fidelity Score": "4",
     "AI Reasoning":
       "The child is now both gesturing and vocalizing, showing progress in her communication. You followed the correct procedure by repeating the question after receiving an unclear response, allowing her to articulate more effectively on the second attempt.\n\nWhile the initial response may have been acceptable despite being unclear, your decision to repeat the question aligns with the flowchart guidelines: if no response or an unclear response is given, repeat the question once more to support clearer communication and reinforce understanding.",
   },
   {
     "Begin-End": "01:49-01:55",
+    Strategy: "Modeling",
     "Fidelity Score": "4",
     "AI Reasoning":
       "You followed an effective approach by waiting approximately 3 seconds after asking the initial question and then repeating the exact same question when there was no response.\n\nThis consistency is key—by not altering the question, you maintained clarity and avoided introducing potential confusion.\n\nChanging the question, even with good intentions, could shift the child's focus and lead to a different response. Sticking to the original question allows for a more accurate follow-through in the flowchart process, keeping the intervention on track.",
   },
   {
     "Begin-End": "01:56-02:02",
+    Strategy: "Modeling",
     "Fidelity Score": "3",
     "AI Reasoning":
       "It's important to recognize that some children may need extra time to process and respond to questions. By repeating the same question after a 3-second pause, you give the child time to understand, process their response, and express it. This is especially crucial for children with developmental delays, such as those with Down syndrome or autism, who may require additional time for both comprehension and expressive language. Although the 3-second pause may feel lengthy for adults, it is essential for the child’s processing. You are already applying this strategy effectively by allowing this pause before repeating the question, which helps reinforce understanding and gives the child an opportunity to respond.",
   },
   {
     "Begin-End": "02:03-02:08",
+    Strategy: "Modeling",
     "Fidelity Score": "1",
     "AI Reasoning":
       "Joint attention is a critical first step in any interaction, whether you're asking a question or modeling language. If the child is not physically or mentally engaged—such as when she shows no interest—this indicates a lack of joint attention. In such moments, it's important not to proceed with asking questions or providing feedback. Instead, focus on gently redirecting her attention to the shared activity before continuing.",
   },
   {
     "Begin-End": "03:36-03:42",
+    Strategy: "Modeling",
     "Fidelity Score": "4",
     "AI Reasoning":
       "Your approach of acknowledging and then expanding on your child's response was highly effective. When Aria responded with 'rain,' you did the right thing by first validating her response with a simple affirmation: 'Yes, rain.' This immediate acknowledgment provides positive feedback and reinforces her language use.\n\nYou then took it a step further by expanding on her single-word response, introducing a more complex sentence ('It's raining,' 'There's an umbrella,' etc.). This method not only enriches her understanding of the concept but also models more complex language structures for her.",
@@ -238,7 +251,6 @@ app.post("/api/start-demo", async (req, res) => {
       [sessionId, userId, "processing", outputCsv, null, true]
     );
   }
-
   try {
     analyzeVideoPython(sessionId, localDemoPath, outputCsv, io, true).then(
       () => {
@@ -250,23 +262,24 @@ app.post("/api/start-demo", async (req, res) => {
               .analysisSegments.push(analysisData);
             io.emit("analysis_progress", analysisData);
           }, index * 3000);
-          setTimeout(() => {
-            transcriptionStore.set(sessionId, {
-              ...transcriptionStore.get(sessionId),
-              status: "completed",
-            });
-            if (userId) {
-              pool.query(
-                `UPDATE sessions SET status = 'completed', updated_at = now() WHERE id = $1`,
-                [sessionId]
-              );
-            }
-            io.emit("analysis_complete", {
-              videoId: sessionId,
-              csvPath: outputCsv,
-            });
-          }, demoAnalysisMessages.length * 3000 + 2000);
         });
+        setTimeout(async () => {
+          transcriptionStore.set(sessionId, {
+            ...transcriptionStore.get(sessionId),
+            status: "completed",
+          });
+          if (userId) {
+            pool.query(
+              `UPDATE sessions SET status = 'completed', updated_at = now() WHERE id = $1`,
+              [sessionId]
+            );
+          }
+          analysisCompleted[sessionId] = true;
+          await handleAnalysisComplete({
+            videoId: sessionId,
+            csvPath: outputCsv,
+          });
+        }, demoAnalysisMessages.length * 3000 + 2000);
       }
     );
   } catch (error) {
@@ -438,30 +451,12 @@ app.post("/api/ai-chat", async (req, res) => {
     const analysisData = [];
     const storeData = transcriptionStore.get(videoId);
 
-    console.log("Store Data:", storeData);
-
     if (storeData && storeData.analysisSegments) {
       analysisData.push(...storeData.analysisSegments);
     }
 
-    console.log("Analysis", analysisData);
-
-    let analysisSummary = analysisData
-      .map((item, idx) => {
-        return `TimeStamp ${item["Begin-End"]} - Segment ${idx + 1}: ${
-          item.Strategy
-        } -> Fidelity ${item["Fidelity Score"]}, Reasoning: ${
-          item["AI Reasoning"]
-        }`;
-      })
-      .join("\n");
-
     const parent = parentName || "the parent";
     const child = childName || "the child";
-
-    if (!analysisSummary) {
-      analysisSummary = "No analysis data available yet.";
-    }
 
     const systemMessage = `
     You are an expert Speech-Language Pathology (SLP) assistant guiding parents through a structured coaching session.
@@ -470,30 +465,17 @@ app.post("/api/ai-chat", async (req, res) => {
     1️ Self-Reflection Phase
        - Ask: "What do you think went well during your time with ${child}?"
        - Ask: "What do you think could have been done differently?"
-       - After two responses, summarize their answers, then move to the next step.
+       - After two user answers, IMMEDIATELY move to Feedback Phase.
   
     2️ Feedback Phase
-       - If the analysis data is not yet available, say that you're currenlty analyzing the video and don't proceed further.
-       - Summarize key takeaways from the analysis data.
-       - Highlight areas of improvement based on fidelity scores.
-       - Move to the next phase after explaining the insights.
+      - Explicitly say you're "still analyzing" the video and will send it shortly. 
   
      **Important Rules**
     - Answer user questions at any time, but **always return to the structured coaching flow**.
     - If a user does not respond meaningfully, gently **guide them forward** without repeating questions too often.
-    - If a user explicitly says they want to move forward, **do so immediately**.
+    - If a user explicitly says [skipped], **do so immediately**.
     - Avoid open-ended loops; once a phase has been sufficiently discussed, move to the next.
-  
-    **Analysis Data for This Session**:
-    ${analysisSummary}
   `;
-    console.log("Analysis Summary", analysisSummary);
-    console.log("Generated System Message:", systemMessage);
-    console.log(
-      "-------------TRASNCRIPTION STORE-------------",
-      transcriptionStore
-    );
-
     const messages = [
       { role: "system", content: systemMessage },
       ...conversationHistory,
@@ -504,7 +486,7 @@ app.post("/api/ai-chat", async (req, res) => {
       {
         model: "gpt-4o-mini",
         messages: messages,
-        temperature: 0.7,
+        temperature: 0.5,
       },
       {
         headers: {
@@ -515,6 +497,17 @@ app.post("/api/ai-chat", async (req, res) => {
     );
 
     let botReply = openaiResponse.data.choices[0].message.content;
+    botReply = botReply
+      .replace(/\*\*(.*?)\*\*/g, "$1")
+      .replace(/\*(.*?)\*/g, "$1")
+      .replace(/__(.*?)__/g, "$1")
+      .replace(/^#{1,6}\s*/gm, "")
+      .replace(/^[-*+]\s+/gm, "")
+      .replace(/^>\s+/gm, "")
+      .replace(/`([^`]*)`/g, "$1")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/\\n/g, "\n");
+
     if (userId) {
       await pool.query(
         `
@@ -525,12 +518,123 @@ app.post("/api/ai-chat", async (req, res) => {
       );
     }
 
-    return res.json({ botReply });
+    res.json({ botReply });
+    if (botReply.includes("still analyzing")) {
+      feedbackPending[videoId] = true;
+      if (analysisCompleted[videoId]) {
+        await handleAnalysisComplete({ videoId });
+      }
+    }
   } catch (error) {
     console.error("Error in /api/ai-chat:", error);
     return res.status(500).json({ error: "Failed to process AI chat" });
   }
 });
+
+async function handleAnalysisComplete(data) {
+  const { videoId } = data;
+  const storeData = transcriptionStore.get(videoId);
+
+  if (!analysisCompleted[videoId]) {
+    console.log("Means we havent truly completed analysis, exit");
+    return;
+  }
+  if (!feedbackPending[videoId]) {
+    console.log("Means user wasnt waiting for feedback yet, exit");
+    return;
+  }
+
+  if (!storeData || storeData.status !== "completed") {
+    console.log(
+      `Analysis not marked as completed yet for ${videoId}, skipping... ${storeData.status}`
+    );
+    return;
+  }
+
+  try {
+    const storeData = transcriptionStore.get(videoId);
+    const analysisData = storeData?.analysisSegments || [];
+
+    if (analysisData.length === 0) {
+      console.log(`No analysis data found for video ${videoId}.`);
+      return;
+    }
+
+    const analysisSummary = analysisData
+      .map(
+        (item, idx) =>
+          `TimeStamp ${item["Begin-End"]} - Segment ${idx + 1}: ${
+            item.Strategy
+          } -> Fidelity ${item["Fidelity Score"]}, Reasoning: ${
+            item["AI Reasoning"]
+          }`
+      )
+      .join("\n");
+
+    const conversationHistory = [
+      {
+        role: "system",
+        content: `
+      You are continuing an ongoing structured coaching session between an AI assistant and a parent. Earlier in the session, the user had reached the Feedback Phase, but the analysis data was not yet ready. The assistant had responded that it was still analyzing and would provide feedback shortly.
+      
+      Now, the analysis is complete. Without repeating previous questions or asking for permission, immediately provide the feedback summary based on the following data:
+      
+      ${analysisSummary}
+
+        - Summarize key takeaways from the analysis data.
+        - Highlight areas of improvement based on fidelity scores.
+        - Don't make it too long - limit it to 3 - 4 points total.
+      
+      Your response should be natural, focused on feedback, and follow the structure of the coaching framework. Do not mention again that the analysis was previously unavailable — just provide the feedback directly by saying here's the feedback.
+          `.trim(),
+      },
+    ];
+
+    const openaiResponse = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4o-mini",
+        messages: conversationHistory,
+        temperature: 0.5,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+      }
+    );
+
+    let feedbackReply = openaiResponse.data.choices[0].message.content;
+    feedbackReply = feedbackReply
+      .replace(/\*\*(.*?)\*\*/g, "$1")
+      .replace(/\*(.*?)\*/g, "$1")
+      .replace(/__(.*?)__/g, "$1")
+      .replace(/^#{1,6}\s*/gm, "")
+      .replace(/^[-*+]\s+/gm, "")
+      .replace(/^>\s+/gm, "")
+      .replace(/`([^`]*)`/g, "$1")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/\\n/g, "\n");
+
+    await pool.query(
+      `INSERT INTO conversation_history (session_id, role, message)
+       VALUES ($1, 'assistant', $2)`,
+      [videoId, feedbackReply]
+    );
+
+    io.emit("new_assistant_message", {
+      videoId,
+      message: feedbackReply,
+    });
+
+    console.log(`✅ Feedback sent for video ${videoId}`);
+
+    feedbackPending[videoId] = false;
+  } catch (err) {
+    console.error("Error sending auto-feedback after analysis:", err);
+  }
+}
 
 app.get("/api/chat/:context", (req, res) => {
   const { context } = req.params;
@@ -591,7 +695,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
     res.json({ success: true, videoId, videoUrl });
 
     analyzeVideoPython(videoId, videoPath, outputCsv, io)
-      .then(() => {
+      .then(async () => {
         transcriptionStore.set(videoId, {
           ...transcriptionStore.get(videoId),
           status: "completed",
@@ -606,7 +710,9 @@ app.post("/upload", upload.single("video"), async (req, res) => {
             [videoId]
           );
         }
-        io.emit("analysis_complete", { videoId, csvPath: outputCsv });
+        analysisCompleted[videoId] = true;
+        console.log(`analysisCompleted[${videoId}] set to true`);
+        await handleAnalysisComplete({ videoId });
         fs.unlink(videoPath, (err) => {
           if (err) console.error(`Failed to delete ${videoPath}:`, err);
           else console.log(`Deleted video: ${videoPath}`);
@@ -785,11 +891,6 @@ io.on("connection", (socket) => {
     store.analysisSegments.push(data);
 
     io.emit("analysis_progress", data);
-  });
-
-  socket.on("analysis_complete", (data) => {
-    console.log("Forwarding analysis_complete to frontend:", data);
-    io.emit("analysis_complete", data);
   });
 
   socket.on("disconnect", () => {

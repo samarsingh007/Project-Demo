@@ -251,7 +251,6 @@ def process_video(video_id, video_path, output_csv="output_analysis.csv", is_dem
         if is_demo:
             time.sleep(5)
             logging.info("Demo video detected. Skipping further analysis.")
-            sio.emit('analysis_complete', {"csvPath": output_csv})
             return
 
         # Step 2: Split Video into Segments
@@ -267,7 +266,7 @@ def process_video(video_id, video_path, output_csv="output_analysis.csv", is_dem
         logging.info(f"Analysis saved to {output_csv}")
 
         # Notify WebSocket that analysis is complete
-        sio.emit('analysis_complete', {"csvPath": output_csv})
+        sio.emit('analysis_complete', {"csvPath": output_csv, "videoId": video_id})
         logging.info("Sent final analysis completion message.")
 
     except Exception as e:

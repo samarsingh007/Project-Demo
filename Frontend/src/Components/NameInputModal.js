@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import supabase from "../supabaseClient";
 import "./CSS/NameInputModal.css";
 
-const NameInputModal = ({ userId, profile, setProfile, setShowNameModal, isGuest }) => {
+const NameInputModal = ({ userId, profile, setProfile, setShowNameModal, isGuest, refreshTrigger, setRefreshTrigger }) => {
   const [parentName, setParentName] = useState("");
   const [childName, setChildName] = useState("");
 
@@ -17,7 +17,7 @@ const NameInputModal = ({ userId, profile, setProfile, setShowNameModal, isGuest
       setParentName(guestParent || "");
       setChildName(guestChild || "");
     }
-  }, [profile, isGuest]);
+  }, [profile, isGuest, refreshTrigger]);
 
   const handleSave = async () => {
     const updateData = {};
@@ -37,12 +37,13 @@ const NameInputModal = ({ userId, profile, setProfile, setShowNameModal, isGuest
       .eq("id", userId);
 
     if (!error) {
-      setProfile((prev) => ({ ...prev, updateData }));
+      setProfile((prev) => ({ ...prev, ...updateData }));
       setShowNameModal(false);
     } else {
       console.error("Error updating profile:", error);
     }
   };
+  setRefreshTrigger(prev => prev + 1);
 }
 
   return (

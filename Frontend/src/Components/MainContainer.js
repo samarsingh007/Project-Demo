@@ -7,7 +7,7 @@ import DiagramLibrary from "./Diagram Library/DiagramLibrary";
 import "./CSS/MainContainer.css";
 import HomePageMobile from "./HomePageMobile";
 
-const MainContainer = ({ profile, setShowNameModal, isGuest, isMobile }) => {
+const MainContainer = ({ profile, setShowNameModal, isGuest, isMobile, refreshTrigger }) => {
   const [selectedPage, setSelectedPage] = useState("currentTraining");
   if (isMobile) {
     return (
@@ -16,6 +16,7 @@ const MainContainer = ({ profile, setShowNameModal, isGuest, isMobile }) => {
         setShowNameModal={setShowNameModal}
         isGuest={isGuest}
         isMobile={isMobile}
+        refreshTrigger={refreshTrigger}
       />
     );
   }
@@ -30,7 +31,7 @@ const MainContainer = ({ profile, setShowNameModal, isGuest, isMobile }) => {
             display: selectedPage === "currentTraining" ? "block" : "none",
           }}
         >
-          <HomePage profile={profile} isGuest={isGuest}/>
+          <HomePage profile={profile} isGuest={isGuest} refreshTrigger={refreshTrigger}/>
         </div>
         <div
           style={{

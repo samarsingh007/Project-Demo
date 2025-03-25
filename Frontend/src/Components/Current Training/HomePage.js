@@ -12,7 +12,7 @@ import "./HomePage.css";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const HomePage = ({ profile, isGuest }) => {
+const HomePage = ({ profile, isGuest, refreshTrigger }) => {
   const [videoTime, setVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
@@ -64,6 +64,7 @@ const HomePage = ({ profile, isGuest }) => {
             videoId={videoId}
             profile={profile}
             isGuest={isGuest}
+            refreshTrigger={refreshTrigger}
           />
         </div>
         <div className="top-right">

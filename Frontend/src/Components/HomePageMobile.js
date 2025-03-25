@@ -12,7 +12,7 @@ import { io } from "socket.io-client";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const HomePageMobile = ({ profile, setShowNameModal, isGuest, isMobile }) => {
+const HomePageMobile = ({ profile, setShowNameModal, isGuest, isMobile, refreshTrigger }) => {
   const [selectedPage, setSelectedPage] = useState("chat");
   const [videoTime, setVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -71,6 +71,7 @@ const HomePageMobile = ({ profile, setShowNameModal, isGuest, isMobile }) => {
             videoId={videoId}
             profile={profile}
             isGuest={isGuest}
+            refreshTrigger={refreshTrigger}
           />
         </div>
         <div

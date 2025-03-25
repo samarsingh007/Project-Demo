@@ -15,6 +15,7 @@ const ChatInterface = ({
   videoId,
   profile,
   isGuest,
+  refreshTrigger,
 }) => {
   const [aiMessages, setAiMessages] = useState([]);
   const [slpMessages, setSlpMessages] = useState([]);
@@ -66,7 +67,7 @@ const ChatInterface = ({
       if (profile?.parent_name) setParentName(profile.parent_name);
       if (profile?.child_name) setChildName(profile.child_name);
     }
-  }, [profile, isGuest]);
+  }, [profile, isGuest, refreshTrigger]);
 
   useEffect(() => {
     if (chatMode === "ai" && aiMessages.length === 0) {

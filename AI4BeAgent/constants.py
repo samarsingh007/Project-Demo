@@ -6,9 +6,6 @@ load_dotenv()
 # Path to the folder containing video files
 VIDEO_FOLDER_PATH = "videos/"
 
-# Path to store extracted audio files temporarily
-TEMP_AUDIO_PATH = "temp_audio.wav"
-
 # Whisper ASR model type (base, small, medium, large)
 WHISPER_MODEL_TYPE = "base"
 

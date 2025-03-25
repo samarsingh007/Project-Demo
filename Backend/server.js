@@ -86,6 +86,44 @@ const upload = multer({
 const allData = new Map();
 const feedbackPending = {};
 const analysisCompleted = {};
+const analysisQueue = [];
+let activeJobs = 0;
+const MAX_CONCURRENCY = 2;
+
+async function processNextJob() {
+  if (analysisQueue.length === 0) return;
+  if (activeJobs >= MAX_CONCURRENCY) return;
+
+  const job = analysisQueue.shift();
+  activeJobs++;
+
+  const {
+    videoId,
+    videoPath,
+    outputCsvPath,
+    io,
+    isDemo,
+    onSuccess,
+    onError,
+  } = job;
+
+  try {
+    await analyzeVideoPython(videoId, videoPath, outputCsvPath, io, isDemo);
+    if (onSuccess) await onSuccess();
+  } catch (error) {
+    if (onError) await onError(error);
+  } finally {
+    activeJobs--;
+    processNextJob();
+  }
+
+  processNextJob();
+}
+
+function addAnalysisJob(job) {
+  analysisQueue.push(job);
+  processNextJob();
+}
 
 const demoAnalysisMessages = [
   {
@@ -217,48 +255,51 @@ app.post("/api/start-demo", async (req, res) => {
       [sessionId, userId, "processing", outputCsv, null, true]
     );
   }
-  try {
-    analyzeVideoPython(sessionId, localDemoPath, outputCsv, io, true).then(
-      () => {
-        demoAnalysisMessages.forEach((message, index) => {
-          setTimeout(() => {
-            const analysisData = { videoId: sessionId, ...message };
-            allData
-              .get(sessionId)
-              .analysisSegments.push(analysisData);
-            io.emit("analysis_progress", analysisData);
-          }, index * 3000);
-        });
-        setTimeout(async () => {
-          allData.set(sessionId, {
-            ...allData.get(sessionId),
-            status: "completed",
-          });
-          if (userId) {
-            pool.query(
-              `UPDATE sessions SET status = 'completed', updated_at = now() WHERE id = $1`,
-              [sessionId]
-            );
-          }
-          analysisCompleted[sessionId] = true;
-          await handleAnalysisComplete({
-            videoId: sessionId,
-            userId,
-          });
-        }, demoAnalysisMessages.length * 3000 + 2000);
-      }
-    );
-  } catch (error) {
-    console.error("Error processing demo video:", error);
-    allData.set(sessionId, { status: "failed" });
-    if (userId) {
-      await pool.query(
-        `UPDATE sessions SET status = 'failed', updated_at = now() WHERE id = $1`,
-        [sessionId]
-      );
-    }
-  }
   res.json({ videoId: sessionId });
+  addAnalysisJob({
+    videoId: sessionId,
+    videoPath: localDemoPath,
+    outputCsvPath: outputCsv,
+    io,
+    isDemo: true,
+
+    onSuccess: async () => {
+      demoAnalysisMessages.forEach((message, index) => {
+        setTimeout(() => {
+          const analysisData = { videoId: sessionId, ...message };
+          allData.get(sessionId).analysisSegments.push(analysisData);
+          io.emit("analysis_progress", analysisData);
+        }, index * 3000);
+      });
+      setTimeout(async () => {
+        allData.set(sessionId, {
+          ...allData.get(sessionId),
+          status: "completed",
+        });
+        if (userId) {
+          await pool.query(
+            `UPDATE sessions SET status = 'completed', updated_at = now() WHERE id = $1`,
+            [sessionId]
+          );
+        }
+        analysisCompleted[sessionId] = true;
+        await handleAnalysisComplete({
+          videoId: sessionId,
+          userId,
+        });
+      }, demoAnalysisMessages.length * 3000 + 2000);
+    },
+    onError: async (error) => {
+      console.error("Error processing demo video:", error);
+      allData.set(sessionId, { status: "failed" });
+      if (userId) {
+        await pool.query(
+          `UPDATE sessions SET status = 'failed', updated_at = now() WHERE id = $1`,
+          [sessionId]
+        );
+      }
+    },
+  });
 });
 
 app.post("/api/ai-chat", async (req, res) => {
@@ -552,39 +593,43 @@ app.post("/upload", upload.single("video"), async (req, res) => {
     });
 
     res.json({ success: true, videoId, videoUrl });
-
-    analyzeVideoPython(videoId, videoPath, outputCsv, io)
-      .then(async () => {
+    addAnalysisJob({
+      videoId,
+      videoPath,
+      outputCsvPath: outputCsv,
+      io,
+      isDemo: false,
+      onSuccess: async () => {
         allData.set(videoId, {
           ...allData.get(videoId),
           status: "completed",
         });
         if (userId !== null) {
-          pool.query(
+          await pool.query(
             `
-          UPDATE sessions
-          SET status = 'completed', updated_at = now()
-          WHERE id = $1
-        `,
+            UPDATE sessions
+            SET status = 'completed', updated_at = now()
+            WHERE id = $1
+          `,
             [videoId]
           );
         }
         analysisCompleted[videoId] = true;
-        console.log(`analysisCompleted[${videoId}] set to true`);
         await handleAnalysisComplete({ videoId, userId });
         fs.unlink(videoPath, (err) => {
           if (err) console.error(`Failed to delete ${videoPath}:`, err);
           else console.log(`Deleted video: ${videoPath}`);
         });
-      })
-      .catch((error) => {
+      },
+
+      onError: async (error) => {
         console.error("Error in analysis:", error);
         allData.set(videoId, {
           ...allData.get(videoId),
           status: "failed",
         });
         if (userId !== null) {
-          pool.query(
+          await pool.query(
             `
           UPDATE sessions
           SET status = 'failed', updated_at = now()
@@ -593,7 +638,8 @@ app.post("/upload", upload.single("video"), async (req, res) => {
             [videoId]
           );
         }
-      });
+      },
+    });
   } catch (error) {
     console.error("Error during video upload:", error.message);
     res.status(500).json({ error: "Video analysis failed" });

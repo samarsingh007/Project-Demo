@@ -4,6 +4,7 @@ import os
 from tqdm import tqdm  # Import tqdm for progress bars
 import constants  # Import the constants file
 import re
+import uuid
 
 def extract_audio_from_video(video_path, audio_output_path):
     """Extracts audio from the video file using moviepy."""
@@ -55,7 +56,7 @@ def save_transcript_to_file(transcript, output_file_path):
 def generate_transcript(video_file, model_type=constants.WHISPER_MODEL_TYPE):
     """Generates transcript for a given video file."""
     # Define file paths
-    audio_output_path = constants.TEMP_AUDIO_PATH
+    audio_output_path = f"./temp/audio_{uuid.uuid4()}.wav"
 
     # Step 1: Extract audio from video
     extract_audio_from_video(video_file, audio_output_path)

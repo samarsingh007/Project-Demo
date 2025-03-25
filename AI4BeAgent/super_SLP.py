@@ -144,7 +144,6 @@ def analyze_segments(segments, segments_times):
 
         # Send real-time update to WebSocket
         sio.emit('analysis_progress', analysis_data)
-        logging.info(f"Sent real-time analysis: {analysis_data}")
 
         # Append to final CSV output
         output_rows.append(analysis_data)
@@ -202,7 +201,6 @@ def send_transcriptions(video_id, transcript):
             "text": line['text']
         }
         sio.emit('transcription_update', transcription_data)
-        logging.info(f"Sent transcription update: {transcription_data}")
 
 """# --- Process Video Function ---
 def process_video(video_id, video_path, output_csv="output_analysis.csv"):

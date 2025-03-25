@@ -277,7 +277,7 @@ app.post("/api/start-demo", async (req, res) => {
           analysisCompleted[sessionId] = true;
           await handleAnalysisComplete({
             videoId: sessionId,
-            csvPath: outputCsv,
+            userId,
           });
         }, demoAnalysisMessages.length * 3000 + 2000);
       }
@@ -526,7 +526,7 @@ app.post("/api/ai-chat", async (req, res) => {
     if (botReply.includes("still analyzing")) {
       feedbackPending[videoId] = true;
       if (analysisCompleted[videoId]) {
-        await handleAnalysisComplete({ videoId });
+        await handleAnalysisComplete({ videoId, userId });
       }
     }
   } catch (error) {
@@ -536,7 +536,7 @@ app.post("/api/ai-chat", async (req, res) => {
 });
 
 async function handleAnalysisComplete(data) {
-  const { videoId } = data;
+  const { videoId, userId } = data;
   const storeData = transcriptionStore.get(videoId);
 
   if (!analysisCompleted[videoId]) {
@@ -621,11 +621,13 @@ async function handleAnalysisComplete(data) {
       .replace(/```[\s\S]*?```/g, "")
       .replace(/\\n/g, "\n");
 
+    if (userId) {
     await pool.query(
       `INSERT INTO conversation_history (session_id, role, message)
        VALUES ($1, 'assistant', $2)`,
       [videoId, feedbackReply]
     );
+  }
 
     io.emit("new_assistant_message", {
       videoId,
@@ -716,7 +718,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
         }
         analysisCompleted[videoId] = true;
         console.log(`analysisCompleted[${videoId}] set to true`);
-        await handleAnalysisComplete({ videoId });
+        await handleAnalysisComplete({ videoId, userId });
         fs.unlink(videoPath, (err) => {
           if (err) console.error(`Failed to delete ${videoPath}:`, err);
           else console.log(`Deleted video: ${videoPath}`);

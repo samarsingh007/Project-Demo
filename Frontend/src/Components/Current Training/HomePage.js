@@ -38,8 +38,10 @@ const HomePage = ({ profile, isGuest, refreshTrigger }) => {
     const socket = io(REACT_APP_API_BASE_URL);
 
     socket.on("analysis_progress", (data) => {
+      if (data.videoId === videoId) {
       console.log("Received real-time analysis:", data);
       setAnalysisResults((prevResults) => [...prevResults, data]);
+      }
     });
 
     return () => {

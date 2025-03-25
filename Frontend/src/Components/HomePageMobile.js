@@ -39,9 +39,11 @@ const HomePageMobile = ({ profile, setShowNameModal, isGuest, isMobile, refreshT
     const socket = io(REACT_APP_API_BASE_URL);
 
     socket.on("analysis_progress", (data) => {
+      if (data.videoId === videoId) {
       console.log("Received real-time analysis:", data);
       setAnalysisResults((prevResults) => [...prevResults, data]);
-    });
+    }
+  });
 
     return () => {
       socket.disconnect();

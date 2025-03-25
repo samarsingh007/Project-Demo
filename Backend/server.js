@@ -83,34 +83,9 @@ const upload = multer({
   dest: "uploads/",
 });
 
-// const minioClient = new Minio.Client({
-//   endPoint: process.env.MINIO_ENDPOINT,
-//   port: parseInt(process.env.MINIO_PORT, 10),
-//   useSSL: process.env.MINIO_USE_SSL === "true",
-//   accessKey: process.env.MINIO_ACCESS_KEY,
-//   secretKey: process.env.MINIO_SECRET_KEY,
-// });
-
-// const BUCKET = process.env.MINIO_BUCKET || "my-bucket";
-
-// minioClient.bucketExists(BUCKET, (err) => {
-//   if (err) {
-//     if (err.code === "NoSuchBucket") {
-//       minioClient.makeBucket(BUCKET, "", (err2) => {
-//         if (err2) console.error("Error creating MinIO bucket:", err2);
-//         else console.log("Created MinIO bucket:", BUCKET);
-//       });
-//     } else {
-//       console.error("Error checking MinIO bucket:", err);
-//     }
-//   } else {
-//     console.log(`MinIO bucket "${BUCKET}" exists.`);
-//   }
-// });
-
-const transcriptionStore = new Map();
+const allData = new Map();
 const feedbackPending = {};
-analysisCompleted = {};
+const analysisCompleted = {};
 
 const demoAnalysisMessages = [
   {
@@ -193,15 +168,6 @@ function analyzeVideoPython(
       outputCsvPath,
       isDemo ? "true" : "false",
     ]);
-    // function analyzeVideoPython(videoId, videoUrl, outputCsvPath, socket, isDemo = false) {
-    //   return new Promise((resolve, reject) => {
-    //     const pythonProcess = spawn(pythonPath, [
-    //       path.join(__dirname, "../AI4BeAgent/super_SLP.py"),
-    //       videoId,
-    //       videoUrl,
-    //       outputCsvPath,
-    //       isDemo ? "true" : "false"
-    //     ]);
 
     pythonProcess.stdout.on("data", (data) => {
       const message = data.toString().trim();
@@ -235,7 +201,7 @@ app.post("/api/start-demo", async (req, res) => {
   const localDemoPath = path.join(__dirname, "demo", "demo.MOV");
   const outputCsv = path.join(__dirname, "uploads", `${sessionId}.csv`);
 
-  transcriptionStore.set(sessionId, {
+  allData.set(sessionId, {
     demoId,
     userId,
     status: "processing",
@@ -257,15 +223,15 @@ app.post("/api/start-demo", async (req, res) => {
         demoAnalysisMessages.forEach((message, index) => {
           setTimeout(() => {
             const analysisData = { videoId: sessionId, ...message };
-            transcriptionStore
+            allData
               .get(sessionId)
               .analysisSegments.push(analysisData);
             io.emit("analysis_progress", analysisData);
           }, index * 3000);
         });
         setTimeout(async () => {
-          transcriptionStore.set(sessionId, {
-            ...transcriptionStore.get(sessionId),
+          allData.set(sessionId, {
+            ...allData.get(sessionId),
             status: "completed",
           });
           if (userId) {
@@ -284,7 +250,7 @@ app.post("/api/start-demo", async (req, res) => {
     );
   } catch (error) {
     console.error("Error processing demo video:", error);
-    transcriptionStore.set(sessionId, { status: "failed" });
+    allData.set(sessionId, { status: "failed" });
     if (userId) {
       await pool.query(
         `UPDATE sessions SET status = 'failed', updated_at = now() WHERE id = $1`,
@@ -292,121 +258,8 @@ app.post("/api/start-demo", async (req, res) => {
       );
     }
   }
-  // transcriptionStore.set(demoId, {
-  //   status: "processing",
-  //   csvPath: outputCsv,
-  //   transcriptions: [],
-  // });
-
-  // analyzeVideoPython(demoId, localDemoPath, outputCsv, io, true)
-  //   .then(() => {
-  //     transcriptionStore.set(demoId, {
-  //       ...transcriptionStore.get(demoId),
-  //       status: "completed",
-  //     });
-  //     io.emit("analysis_complete", { videoId: demoId, csvPath: outputCsv });
-  //   })
-  //   .catch((err) => {
-  //     console.error("Analysis error for demo:", err);
-  //     transcriptionStore.set(demoId, {
-  //       ...transcriptionStore.get(demoId),
-  //       status: "failed",
-  //     });
-  //   });
-
   res.json({ videoId: sessionId });
 });
-
-// app.get("/api/get-presigned-url", async (req, res) => {
-//   try {
-//     const { filename } = req.query;
-
-//     const videoId = uuidv4();
-//     const ext = path.extname(filename) || ".mp4";
-//     const objectName = `${videoId}${ext}`;
-
-//     const presignedUrl = await new Promise((resolve, reject) => {
-//       minioClient.presignedPutObject(
-//         BUCKET,
-//         objectName,
-//         3600,
-//         (err, url) => {
-//           if (err) reject(err);
-//           else resolve(url);
-//         }
-//       );
-//     });
-
-//     transcriptionStore.set(videoId, {
-//       objectName,
-//       status: "uploaded",
-//       transcriptions: [],
-//     });
-
-//     return res.json({ videoId, presignedUrl, objectName });
-//   } catch (error) {
-//     console.error("Error generating presigned URL:", error);
-//     return res.status(500).json({ error: "Could not generate presigned URL" });
-//   }
-// });
-
-// app.post("/api/start-analysis", async (req, res) => {
-//   try {
-//     const { videoId } = req.body;
-
-//     // Ensure we have a record of this video
-//     if (!transcriptionStore.has(videoId)) {
-//       return res
-//         .status(404)
-//         .json({ error: "No record found for this videoId." });
-//     }
-
-//     const { objectName } = transcriptionStore.get(videoId);
-//     if (!objectName) {
-//       return res.status(400).json({ error: "No objectName found in store." });
-//     }
-
-//     const outputCsv = path.join(__dirname, "uploads", `${videoId}.csv`);
-
-//     // Save status in store
-//     transcriptionStore.set(videoId, {
-//       ...transcriptionStore.get(videoId),
-//       status: "processing",
-//       csvPath: outputCsv,
-//     });
-
-//     const getUrl = await new Promise((resolve, reject) => {
-//       minioClient.presignedGetObject(BUCKET, objectName, 3600, (err, url) => {
-//         if (err) reject(err);
-//         else resolve(url);
-//       });
-//     });
-
-//     console.log("Running Python script with:", videoId, objectName, outputCsv);
-//     analyzeVideoPython(videoId, getUrl, outputCsv, io)
-//       .then(() => {
-//         // Update store
-//         transcriptionStore.set(videoId, {
-//           ...transcriptionStore.get(videoId),
-//           status: "completed",
-//         });
-//         // Let the front-end know
-//         io.emit("analysis_complete", { videoId, csvPath: outputCsv });
-//       })
-//       .catch((err) => {
-//         console.error("Analysis error:", err);
-//         transcriptionStore.set(videoId, {
-//           ...transcriptionStore.get(videoId),
-//           status: "failed",
-//         });
-//       });
-
-//     return res.json({ success: true, status: "analysis-started" });
-//   } catch (error) {
-//     console.error("Error in /api/start-analysis:", error);
-//     return res.status(500).json({ error: "Failed to start analysis" });
-//   }
-// });
 
 app.post("/api/ai-chat", async (req, res) => {
   try {
@@ -449,7 +302,7 @@ app.post("/api/ai-chat", async (req, res) => {
       }
     }
     const analysisData = [];
-    const storeData = transcriptionStore.get(videoId);
+    const storeData = allData.get(videoId);
 
     if (storeData && storeData.analysisSegments) {
       analysisData.push(...storeData.analysisSegments);
@@ -537,7 +390,7 @@ app.post("/api/ai-chat", async (req, res) => {
 
 async function handleAnalysisComplete(data) {
   const { videoId, userId } = data;
-  const storeData = transcriptionStore.get(videoId);
+  const storeData = allData.get(videoId);
 
   if (!analysisCompleted[videoId]) {
     console.log("Means we havent truly completed analysis, exit");
@@ -556,7 +409,7 @@ async function handleAnalysisComplete(data) {
   }
 
   try {
-    const storeData = transcriptionStore.get(videoId);
+    const storeData = allData.get(videoId);
     const analysisData = storeData?.analysisSegments || [];
 
     if (analysisData.length === 0) {
@@ -690,7 +543,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
         [videoId, userId, "processing", outputCsv, videoUrl, false]
       );
     }
-    transcriptionStore.set(videoId, {
+    allData.set(videoId, {
       userId,
       videoUrl,
       transcriptions: [],
@@ -702,8 +555,8 @@ app.post("/upload", upload.single("video"), async (req, res) => {
 
     analyzeVideoPython(videoId, videoPath, outputCsv, io)
       .then(async () => {
-        transcriptionStore.set(videoId, {
-          ...transcriptionStore.get(videoId),
+        allData.set(videoId, {
+          ...allData.get(videoId),
           status: "completed",
         });
         if (userId !== null) {
@@ -726,8 +579,8 @@ app.post("/upload", upload.single("video"), async (req, res) => {
       })
       .catch((error) => {
         console.error("Error in analysis:", error);
-        transcriptionStore.set(videoId, {
-          ...transcriptionStore.get(videoId),
+        allData.set(videoId, {
+          ...allData.get(videoId),
           status: "failed",
         });
         if (userId !== null) {
@@ -749,10 +602,10 @@ app.post("/upload", upload.single("video"), async (req, res) => {
 
 app.get("/api/analysis/:videoId", (req, res) => {
   const { videoId } = req.params;
-  if (!transcriptionStore.has(videoId)) {
+  if (!allData.has(videoId)) {
     return res.status(404).json({ error: "No data for this video ID" });
   }
-  const { csvPath, status } = transcriptionStore.get(videoId);
+  const { csvPath, status } = allData.get(videoId);
 
   if (status !== "completed") {
     return res.status(200).json({ status });
@@ -766,13 +619,13 @@ app.get("/api/transcriptions/:videoId", (req, res) => {
   const { videoId } = req.params;
   const { videoTime, full } = req.query;
 
-  if (!transcriptionStore.has(videoId)) {
+  if (!allData.has(videoId)) {
     return res
       .status(404)
       .json({ error: "No transcriptions available for this video." });
   }
 
-  const transcriptions = transcriptionStore.get(videoId).transcriptions;
+  const transcriptions = allData.get(videoId).transcriptions;
 
   if (!transcriptions || transcriptions.length === 0) {
     return res.status(200).json({ status: "processing" });
@@ -838,7 +691,7 @@ app.get("/api/relative-positions", (req, res) => {
 app.get("/api/fidelity-messages", (req, res) => {
   let allFidelityMessages = [];
 
-  transcriptionStore.forEach((data, videoId) => {
+  allData.forEach((data, videoId) => {
     const transcriptions = data.transcriptions || [];
 
     transcriptions.forEach((t) => {
@@ -859,10 +712,10 @@ io.on("connection", (socket) => {
   console.log("Client connected to WebSocket");
 
   socket.on("transcription_update", (data) => {
-    if (!transcriptionStore.has(data.videoId)) {
-      transcriptionStore.set(data.videoId, { transcriptions: [] });
+    if (!allData.has(data.videoId)) {
+      allData.set(data.videoId, { transcriptions: [] });
     }
-    transcriptionStore.get(data.videoId).transcriptions.push({
+    allData.get(data.videoId).transcriptions.push({
       start: data.start,
       end: data.end,
       text: data.text,
@@ -879,14 +732,14 @@ io.on("connection", (socket) => {
     console.log("Forwarding analysis_progress to frontend:", data);
 
     const { videoId } = data;
-    if (!transcriptionStore.has(videoId)) {
-      transcriptionStore.set(videoId, {
+    if (!allData.has(videoId)) {
+      allData.set(videoId, {
         transcriptions: [],
         analysisSegments: [],
       });
     }
 
-    const store = transcriptionStore.get(videoId);
+    const store = allData.get(videoId);
 
     if (!store.analysisSegments) {
       store.analysisSegments = [];

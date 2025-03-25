@@ -22,9 +22,12 @@ const VideoUpload = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isDemoActive, setIsDemoActive] = useState(false);
   const [isTranscriptionActive, setIsTranscriptionActive] = useState(false);
+  const [isDemoDisabled, setIsDemoDisabled] = useState(false);
 
   const handlePlayDemoVideo = async () => {
+    if (isDemoDisabled) return;
     setIsDemoActive((prev) => !prev);
+    setIsDemoDisabled(true);
     try {
       setVideo(process.env.PUBLIC_URL + "/demo/demo.MOV");
       const userId = profile ? profile.id : null;
@@ -221,6 +224,7 @@ const VideoUpload = ({
           </button>
           <button
             className={`demo-button ${isDemoActive ? "active" : ""}`}
+            disabled={isDemoDisabled} 
             onClick={(e) => {
               handlePlayDemoVideo();
             }}

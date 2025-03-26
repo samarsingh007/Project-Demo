@@ -8,6 +8,13 @@ import HomeIcon from "../Assets/home.svg";
 const MobileBottomBar = ({ selectedPage, setSelectedPage }) => {
   return (
     <div className="mobile-bottom-bar">
+            <button
+        onClick={() => setSelectedPage("home")}
+        className={selectedPage === "home" ? "active" : "home-inactive"}
+      >
+        <img src={HomeIcon} alt="Home" className="home-img"/>
+        <span>Home</span>
+      </button>
       <button
         onClick={() => setSelectedPage("chat")}
         className={selectedPage === "chat" ? "active" : ""}
@@ -30,13 +37,6 @@ const MobileBottomBar = ({ selectedPage, setSelectedPage }) => {
       >
         <img src={ListIcon} alt="Diagram" />
         <span>Diagram</span>
-      </button>
-      <button
-        onClick={() => setSelectedPage("home")}
-        className={selectedPage === "home" ? "active" : "home-inactive"}
-      >
-        <img src={HomeIcon} alt="Home" className="home-img"/>
-        <span>Home</span>
       </button>
     </div>
   );

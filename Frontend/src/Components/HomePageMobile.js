@@ -9,11 +9,12 @@ import VideoUpload from "./Current Training/Components/VideoUpload";
 import HighlightsTimeline from "./Current Training/Components/HighlightsTimeline";
 import TranscriptionWindow from "./Current Training/Components/TranscriptionWindow";
 import { io } from "socket.io-client";
+import TrainingHistory from "./Training History/TrainingHistory";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const HomePageMobile = ({ profile, setShowNameModal, isGuest, isMobile, refreshTrigger }) => {
-  const [selectedPage, setSelectedPage] = useState("chat");
+const HomePageMobile = ({ userId, onAppReload, profile, setShowNameModal, isGuest, isMobile, refreshTrigger }) => {
+  const [selectedPage, setSelectedPage] = useState("home");
   const [videoTime, setVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [newVideoUploaded, setNewVideoUploaded] = useState(false);
@@ -58,6 +59,14 @@ const HomePageMobile = ({ profile, setShowNameModal, isGuest, isMobile, refreshT
     <div className="home-mobile-wrapper">
       <MobileTopBar profile={profile} setShowNameModal={setShowNameModal} />
       <div className="mobile-content">
+      <div
+          className="chat-container-mobile fade-in"
+          style={{
+            display: selectedPage === "home" ? "block" : "none",
+          }}
+        >
+          <TrainingHistory userId = {userId} isMobile={isMobile}/>
+        </div>
         <div
           className="chat-container-mobile fade-in"
           style={{
@@ -83,6 +92,7 @@ const HomePageMobile = ({ profile, setShowNameModal, isGuest, isMobile, refreshT
           }}
         >
           <VideoUpload
+            onAppReload={onAppReload}
             onVideoTimeUpdate={handleVideoTimeUpdate}
             setNewVideoUploaded={setNewVideoUploaded}
             setVideoId={setVideoId}

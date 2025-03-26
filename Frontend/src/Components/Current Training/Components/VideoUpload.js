@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./CSS/VideoUpload.css";
 import ChooseIcon from "../../../Assets/Choose.svg";
 import transcriptionIcon from "../../../Assets/transcription.svg";
@@ -6,6 +6,7 @@ import transcriptionIcon from "../../../Assets/transcription.svg";
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const VideoUpload = ({
+  onAppReload,
   onVideoTimeUpdate,
   setNewVideoUploaded,
   setVideoId,
@@ -24,7 +25,36 @@ const VideoUpload = ({
   const [isTranscriptionActive, setIsTranscriptionActive] = useState(false);
   const [isDemoDisabled, setIsDemoDisabled] = useState(false);
 
+  const handleVideoUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const hadPreviousVideo = !!videoId;
+
+    window._newUploadFile = file;
+
+    if (hadPreviousVideo && onAppReload) {
+      onAppReload();
+    } else {
+      proceedWithUpload(file);
+    }
+  };
+
   const handlePlayDemoVideo = async () => {
+    if (isDemoDisabled) return;
+
+    const hadPreviousVideo = !!videoId;
+
+    window._startDemoAfterReset = true;
+
+    if (hadPreviousVideo && onAppReload) {
+      onAppReload();
+    } else {
+      startDemoVideo();
+    }
+  };
+
+  const startDemoVideo = useCallback(async () => {
     if (isDemoDisabled) return;
     setIsDemoActive((prev) => !prev);
     setIsDemoDisabled(true);
@@ -48,134 +78,67 @@ const VideoUpload = ({
     } catch (error) {
       console.error("Error loading demo video:", error);
     }
-  };
+  }, [
+    isDemoDisabled,
+    profile,
+    setVideo,
+    setVideoId,
+    setNewVideoUploaded,
+    setIsDemoActive,
+    setIsDemoDisabled,
+  ]);
 
-  const handleVideoUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const userId = profile ? profile.id : null;
+  const proceedWithUpload = useCallback(
+    async (file) => {
+      if (!file) return;
+      const userId = profile ? profile.id : null;
 
-    const previewURL = URL.createObjectURL(file);
-    setVideo(previewURL);
+      const previewURL = URL.createObjectURL(file);
+      setVideo(previewURL);
 
-    const formData = new FormData();
-    formData.append("video", file);
-    formData.append("userId", userId);
+      const formData = new FormData();
+      formData.append("video", file);
+      formData.append("userId", userId);
 
-    setIsUploading(true);
-    setUploadProgress(0);
+      setIsUploading(true);
+      setUploadProgress(0);
 
-    try {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", `${REACT_APP_API_BASE_URL}/upload`, true);
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${REACT_APP_API_BASE_URL}/upload`, true);
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const progress = Math.round((e.loaded / e.total) * 100);
-          setUploadProgress(progress);
-        }
-      };
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const progress = Math.round((e.loaded / e.total) * 100);
+            setUploadProgress(progress);
+          }
+        };
 
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          const data = JSON.parse(xhr.responseText);
-          setNewVideoUploaded(true);
-          setVideoId(data.videoId);
-          console.log("Video successfully uploaded.");
-        } else {
-          console.error("Failed to upload video.");
-        }
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText);
+            setNewVideoUploaded(true);
+            setVideoId(data.videoId);
+            console.log("Video successfully uploaded.");
+          } else {
+            console.error("Failed to upload video.");
+          }
+          setIsUploading(false);
+        };
+
+        xhr.onerror = () => {
+          console.error("Error during video upload.");
+          setIsUploading(false);
+        };
+
+        xhr.send(formData);
+      } catch (error) {
+        console.error("Error uploading video:", error);
         setIsUploading(false);
-      };
-
-      xhr.onerror = () => {
-        console.error("Error during video upload.");
-        setIsUploading(false);
-      };
-
-      xhr.send(formData);
-    } catch (error) {
-      console.error("Error uploading video:", error);
-      setIsUploading(false);
-    }
-  };
-
-  // const handleVideoUpload = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (!file) return;
-
-  //   const previewURL = URL.createObjectURL(file);
-  //   setVideo(previewURL);
-
-  //   try {
-  //     const presignedUrlResponse = await fetch(
-  //       `${REACT_APP_API_BASE_URL}/api/get-presigned-url?filename=${file.name}`
-  //     );
-
-  //     if (!presignedUrlResponse.ok) {
-  //       throw new Error("Failed to get presigned URL");
-  //     }
-
-  //     const { videoId, presignedUrl, objectName } = await presignedUrlResponse.json();
-  //     console.log("File uploaded with object name:", objectName);
-
-  //     setIsUploading(true);
-  //     setUploadProgress(0);
-
-  //         await new Promise((resolve, reject) => {
-  //           const xhr = new XMLHttpRequest();
-  //           xhr.open("PUT", presignedUrl);
-
-  //           xhr.upload.onprogress = (e) => {
-  //             if (e.lengthComputable) {
-  //               const percent = Math.round((e.loaded / e.total) * 100);
-  //               setUploadProgress(percent);
-  //             }
-  //           };
-
-  //           xhr.onload = () => {
-  //             if (xhr.status === 200) {
-  //               console.log("✅ Video uploaded successfully to MinIO.");
-  //               resolve();
-  //             } else {
-  //               console.error("Upload failed with status", xhr.status);
-  //               reject(new Error("Failed to upload video to MinIO"));
-  //             }
-  //           };
-
-  //           xhr.onerror = () => {
-  //             reject(new Error("Network error during upload"));
-  //           };
-
-  //           xhr.send(file);
-  //         });
-
-  //         console.log("✅ Video uploaded successfully to MinIO.");
-
-  //     // ✅ Step 3: Notify the backend to start video analysis
-  //     const analysisResponse = await fetch(
-  //       `${REACT_APP_API_BASE_URL}/api/start-analysis`,
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ videoId }),
-  //       }
-  //     );
-
-  //     if (!analysisResponse.ok) {
-  //       throw new Error("Failed to start analysis");
-  //     }
-
-  //     console.log("✅ Analysis started successfully.");
-
-  //     setNewVideoUploaded(true);
-  //     setVideoId(videoId);
-  //   } catch (error) {
-  //     console.error("Error uploading video:", error);
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
+      }
+    },
+    [profile, setVideoId, setNewVideoUploaded]
+  );
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
@@ -206,6 +169,21 @@ const VideoUpload = ({
     setIsDemoActive(false);
   };
 
+  useEffect(() => {
+    if (window._newUploadFile) {
+      const file = window._newUploadFile;
+      delete window._newUploadFile;
+      proceedWithUpload(file);
+    }
+  }, [proceedWithUpload]);
+
+  useEffect(() => {
+    if (window._startDemoAfterReset) {
+      delete window._startDemoAfterReset;
+      startDemoVideo();
+    }
+  }, [startDemoVideo]);
+
   return (
     <div className="training-video-container">
       <div className="training-video-header">
@@ -224,7 +202,7 @@ const VideoUpload = ({
           </button>
           <button
             className={`demo-button ${isDemoActive ? "active" : ""}`}
-            disabled={isDemoDisabled} 
+            disabled={isDemoDisabled}
             onClick={(e) => {
               handlePlayDemoVideo();
             }}
@@ -237,7 +215,9 @@ const VideoUpload = ({
             Demo Video
           </button>
           <button
-            className={`transcription-button ${isTranscriptionActive ? "active" : ""}`}
+            className={`transcription-button ${
+              isTranscriptionActive ? "active" : ""
+            }`}
             onClick={() => {
               handleTranscription();
               setIsTranscriptionActive((prev) => !prev);

@@ -7,11 +7,13 @@ import DiagramLibrary from "./Diagram Library/DiagramLibrary";
 import "./CSS/MainContainer.css";
 import HomePageMobile from "./HomePageMobile";
 
-const MainContainer = ({ profile, setShowNameModal, isGuest, isMobile, refreshTrigger }) => {
+const MainContainer = ({ onAppReload, userId, profile, setShowNameModal, isGuest, isMobile, refreshTrigger }) => {
   const [selectedPage, setSelectedPage] = useState("currentTraining");
   if (isMobile) {
     return (
       <HomePageMobile
+        userId = {userId}
+        onAppReload={onAppReload}
         profile={profile}
         setShowNameModal={setShowNameModal}
         isGuest={isGuest}
@@ -31,14 +33,14 @@ const MainContainer = ({ profile, setShowNameModal, isGuest, isMobile, refreshTr
             display: selectedPage === "currentTraining" ? "block" : "none",
           }}
         >
-          <HomePage profile={profile} isGuest={isGuest} refreshTrigger={refreshTrigger}/>
+          <HomePage onAppReload={onAppReload} profile={profile} isGuest={isGuest} refreshTrigger={refreshTrigger}/>
         </div>
         <div
           style={{
             display: selectedPage === "trainingHistory" ? "block" : "none",
           }}
         >
-          <TrainingHistory />
+          <TrainingHistory userId = {userId}/>
         </div>
         <div
           style={{

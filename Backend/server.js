@@ -127,49 +127,49 @@ function addAnalysisJob(job) {
 const demoAnalysisMessages = [
   {
     "Begin-End": "01:28-01:35",
-    Strategy: "Modeling",
+    "Strategy": "Modeling",
     "Fidelity Score": "3",
     "AI Reasoning":
       "Pay closer attention to non-verbal cues, such as signing or gestures, especially when your child is engaged in activities that may make verbal communication difficult, like being inside a tunnel.",
   },
   {
     "Begin-End": "01:36-01:42",
-    Strategy: "Modeling",
+    "Strategy": "Modeling",
     "Fidelity Score": "4",
     "AI Reasoning":
       "You're effectively following the intervention flowchart steps by establishing joint attention, presenting your strategy, and waiting for at least 3 seconds.\n\nAfter repeating the question, your response should branch into two outcomes: if you receive a correct response, acknowledge and reinforce it; if no response or an incorrect response occurs, repeat the exact question once more. This structured repetition helps the child understand and engage while providing clarity in your feedback process.",
   },
   {
     "Begin-End": "01:43-01:48",
-    Strategy: "Modeling",
+    "Strategy": "Modeling",
     "Fidelity Score": "4",
     "AI Reasoning":
       "The child is now both gesturing and vocalizing, showing progress in her communication. You followed the correct procedure by repeating the question after receiving an unclear response, allowing her to articulate more effectively on the second attempt.\n\nWhile the initial response may have been acceptable despite being unclear, your decision to repeat the question aligns with the flowchart guidelines: if no response or an unclear response is given, repeat the question once more to support clearer communication and reinforce understanding.",
   },
   {
     "Begin-End": "01:49-01:55",
-    Strategy: "Modeling",
+    "Strategy": "Modeling",
     "Fidelity Score": "4",
     "AI Reasoning":
       "You followed an effective approach by waiting approximately 3 seconds after asking the initial question and then repeating the exact same question when there was no response.\n\nThis consistency is key—by not altering the question, you maintained clarity and avoided introducing potential confusion.\n\nChanging the question, even with good intentions, could shift the child's focus and lead to a different response. Sticking to the original question allows for a more accurate follow-through in the flowchart process, keeping the intervention on track.",
   },
   {
     "Begin-End": "01:56-02:02",
-    Strategy: "Modeling",
+    "Strategy": "Modeling",
     "Fidelity Score": "3",
     "AI Reasoning":
       "It's important to recognize that some children may need extra time to process and respond to questions. By repeating the same question after a 3-second pause, you give the child time to understand, process their response, and express it. This is especially crucial for children with developmental delays, such as those with Down syndrome or autism, who may require additional time for both comprehension and expressive language. Although the 3-second pause may feel lengthy for adults, it is essential for the child’s processing. You are already applying this strategy effectively by allowing this pause before repeating the question, which helps reinforce understanding and gives the child an opportunity to respond.",
   },
   {
     "Begin-End": "02:03-02:08",
-    Strategy: "Modeling",
+    "Strategy": "Modeling",
     "Fidelity Score": "1",
     "AI Reasoning":
       "Joint attention is a critical first step in any interaction, whether you're asking a question or modeling language. If the child is not physically or mentally engaged—such as when she shows no interest—this indicates a lack of joint attention. In such moments, it's important not to proceed with asking questions or providing feedback. Instead, focus on gently redirecting her attention to the shared activity before continuing.",
   },
   {
     "Begin-End": "03:36-03:42",
-    Strategy: "Modeling",
+    "Strategy": "Modeling",
     "Fidelity Score": "4",
     "AI Reasoning":
       "Your approach of acknowledging and then expanding on your child's response was highly effective. When Aria responded with 'rain,' you did the right thing by first validating her response with a simple affirmation: 'Yes, rain.' This immediate acknowledgment provides positive feedback and reinforces her language use.\n\nYou then took it a step further by expanding on her single-word response, introducing a more complex sentence ('It's raining,' 'There's an umbrella,' etc.). This method not only enriches her understanding of the concept but also models more complex language structures for her.",
@@ -249,7 +249,7 @@ app.post("/api/start-demo", async (req, res) => {
 
   if (userId) {
     await pool.query(
-      `INSERT INTO sessions (id, user_id, status, analysis_csv_path, video_url, is_demo)
+      `INSERT INTO sessions (id, user_id, status, summary, video_url, is_demo)
      VALUES ($1, $2, $3, $4, $5, $6)`,
       [sessionId, userId, "processing", outputCsv, null, true]
     );
@@ -578,7 +578,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
 
     if (userId !== null) {
       await pool.query(
-        `INSERT INTO sessions (id, user_id, status, analysis_csv_path, video_url, is_demo)
+        `INSERT INTO sessions (id, user_id, status, summary, video_url, is_demo)
        VALUES ($1, $2, $3, $4, $5, $6)`,
         [videoId, userId, "processing", outputCsv, videoUrl, false]
       );
@@ -753,35 +753,82 @@ app.get("/api/fidelity-messages", (req, res) => {
   res.json(allFidelityMessages);
 });
 
+// In your backend
+app.get("/api/sessions/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT id, video_url, is_demo, status, summary, created_at
+       FROM sessions
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching sessions:", err);
+    res.status(500).json({ error: "Failed to fetch sessions" });
+  }
+});
+
+app.get("/api/analysis-details/:sessionId", async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const result = await pool.query(
+      "SELECT summary FROM sessions WHERE id = $1",
+      [sessionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    res.json({ summary: result.rows[0].summary });
+  } catch (err) {
+    console.error("Error fetching analysis summary:", err);
+    res.status(500).json({ error: "Failed to fetch summary" });
+  }
+});
+
 io.on("connection", (socket) => {
   console.log("Client connected to WebSocket");
 
-  socket.on("transcription_update", (data) => {
-    if (!allData.has(data.videoId)) {
-      allData.set(data.videoId, { transcriptions: [] });
+  socket.on("transcription_update", async (data) => {
+    const { videoId, start, end, text } = data;
+  
+    // Save in-memory
+    if (!allData.has(videoId)) {
+      allData.set(videoId, { transcriptions: [] });
     }
-    allData.get(data.videoId).transcriptions.push({
-      start: data.start,
-      end: data.end,
-      text: data.text,
-    });
-    io.emit("transcription_updated", {
-      videoId: data.videoId,
-      start: data.start,
-      end: data.end,
-      text: data.text,
-    });
+    allData.get(videoId).transcriptions.push({ start, end, text });
+  
+    // Emit to frontend
+    io.emit("transcription_updated", { videoId, start, end, text });
+  
+    // Save to PostgreSQL
+    try {
+      await pool.query(
+        `INSERT INTO transcriptions (session_id, start_time, end_time, text)
+         VALUES ($1, $2, $3, $4)`,
+        [videoId, start, end, text]
+      );
+    } catch (err) {
+      console.error("❌ Error inserting transcription into DB:", err);
+    }
   });
+  
 
-  socket.on("analysis_progress", (data) => {
-    const { videoId } = data;
+  socket.on("analysis_progress", async (data) => {
+    const { videoId, "Begin-End": beginEnd, Strategy, "Fidelity Score": fidelityScore, "AI Reasoning": aiReasoning } = data;
     if (!allData.has(videoId)) {
       allData.set(videoId, {
         transcriptions: [],
         analysisSegments: [],
       });
     }
-
     const store = allData.get(videoId);
 
     if (!store.analysisSegments) {
@@ -790,10 +837,94 @@ io.on("connection", (socket) => {
 
     if (videoId === "demo-video-id") return;
 
-    store.analysisSegments.push(data);
+    const analysisData = {
+      videoId,
+      beginEnd,
+      strategy: Strategy,
+      fidelityScore,
+      aiReasoning,
+    };
 
+    store.analysisSegments.push(analysisData);
+
+    try {
+      await pool.query(
+        `INSERT INTO analysis_segments (session_id, begin_end, strategy, fidelity_score, ai_reasoning)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [videoId, beginEnd, Strategy, fidelityScore, aiReasoning]
+      );
+    } catch (err) {
+      console.error("❌ Error saving analysis segment to DB:", err);
+    }
+  
     io.emit("analysis_progress", data);
   });
+
+  socket.on("analysis_complete", async ({ videoId, userId }) => {
+    const storeData = allData.get(videoId);
+    if (!storeData || !storeData.analysisSegments) return;
+  
+    const analysisData = storeData.analysisSegments;
+
+    const formattedAnalysis = analysisData.map((segment, idx) => ({
+      index: idx + 1,
+      timestamp: segment.beginEnd,
+      strategy: segment.strategy,
+      fidelity_score: segment.fidelityScore,
+      reasoning: segment.aiReasoning,
+    }));
+    
+    
+      const summaryPrompt = `
+      You are a training coach reviewing the following analysis segments from a parent-child interaction video. Your task is to create a **structured training session summary** in the following format exactly:
+      
+     Based on the provided analysis data, return the following items as a clean JSON object with these exact keys:
+
+      {
+        "date": "Full date like March 26, 2025",
+        "topic": "Short topic title",
+        "identified_problems": ["Problem 1", "Problem 2", ...],
+        "suggestions": ["Suggestion 1", "Suggestion 2", ...],
+        "key_highlights": ["Highlight 1", "Highlight 2", ...],
+        "learning_outcomes": ["Outcome 1", "Outcome 2", ...],
+        "next_steps": ["Step 1", "Step 2", ...]
+      }
+      Elaborate in each point.
+
+      Your output must only include this JSON. No commentary or explanation.
+      `.trim();
+    try {
+      const openaiResponse = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: summaryPrompt },
+            { role: "user", content: JSON.stringify(formattedAnalysis) }
+          ],
+          temperature: 0.3,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          }
+        }
+      );
+  
+      const summary = openaiResponse.data.choices[0].message.content;
+  
+      await pool.query(
+        `UPDATE sessions SET summary = $1, updated_at = NOW() WHERE id = $2`,
+        [summary, videoId]
+      );
+  
+      console.log(`✅ Summary generated and saved for ${videoId}`);
+    } catch (err) {
+      console.error("❌ Error generating or saving summary:", err);
+    }
+    io.emit("analysis_complete", { videoId, userId });
+  }); 
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");

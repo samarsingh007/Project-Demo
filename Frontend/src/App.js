@@ -21,6 +21,7 @@ function App() {
   const [childName, setChildName] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [appKey, setAppKey] = useState(0);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -114,7 +115,7 @@ function App() {
           path="/Project-Demo"
           element={
             session || isGuest ? (
-              <MainContainer profile={profile} setShowNameModal={setShowNameModal} isGuest={isGuest} isMobile={isMobile} refreshTrigger={refreshTrigger}/>
+              <MainContainer  key={appKey} onAppReload={() => setAppKey(prev => prev + 1)} userId={session?.user?.id} profile={profile} setShowNameModal={setShowNameModal} isGuest={isGuest} isMobile={isMobile} refreshTrigger={refreshTrigger}/>
             ) : (
               <Navigate to="/login" />
             )

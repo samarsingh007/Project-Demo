@@ -56,6 +56,7 @@ def save_transcript_to_file(transcript, output_file_path):
 def generate_transcript(video_file, model_type=constants.WHISPER_MODEL_TYPE):
     """Generates transcript for a given video file."""
     # Define file paths
+    os.makedirs("./temp", exist_ok=True)
     audio_output_path = f"./temp/audio_{uuid.uuid4()}.wav"
 
     # Step 1: Extract audio from video

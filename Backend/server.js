@@ -11,7 +11,6 @@ const { spawn } = require("child_process");
 const { Pool } = require("pg");
 const { validate: isUuid } = require("uuid");
 require("dotenv").config();
-// const Minio = require("minio");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -775,8 +774,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("analysis_progress", (data) => {
-    console.log("Forwarding analysis_progress to frontend:", data);
-
     const { videoId } = data;
     if (!allData.has(videoId)) {
       allData.set(videoId, {

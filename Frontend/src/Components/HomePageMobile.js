@@ -9,7 +9,7 @@ import VideoUpload from "./Current Training/Components/VideoUpload";
 import HighlightsTimeline from "./Current Training/Components/HighlightsTimeline";
 import TranscriptionWindow from "./Current Training/Components/TranscriptionWindow";
 import { io } from "socket.io-client";
-import TrainingHistory from "./Training History/TrainingHistory";
+import MobileHomeDashboard from "./MobileHomeDashboard";
 
 const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -65,7 +65,7 @@ const HomePageMobile = ({ userId, onAppReload, profile, setShowNameModal, isGues
             display: selectedPage === "home" ? "block" : "none",
           }}
         >
-          <TrainingHistory userId = {userId} isMobile={isMobile}/>
+          <MobileHomeDashboard userId={userId} isMobile={isMobile} />
         </div>
         <div
           className="chat-container-mobile fade-in"

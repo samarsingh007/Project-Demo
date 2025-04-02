@@ -204,7 +204,7 @@ const ChatInterface = ({
       setIsAwaitingResponse(false);
       setContext("LLM");
       const botReplyMsg = {
-        text: `First, let’s take a moment to reflect on today’s interaction with ${childName}. What do you think went well?`,
+        text: `First, let’s take a moment to reflect on today’s interaction with ${childName}. What specific interactions or moments felt most positive with ${childName}? Why do you think those worked well?`,
         sender: "bot",
       };
       setAiMessages((prev) => [...prev, botReplyMsg]);

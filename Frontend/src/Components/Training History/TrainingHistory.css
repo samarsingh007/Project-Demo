@@ -152,7 +152,7 @@
     .training-container {
       flex-direction: column;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 22px;
     }
   
     .training-sidebar {
@@ -183,13 +183,12 @@
     }
   
     .analysis-panel {
-      padding-left: 0;
-      padding-top: 10px;
+      padding: 0;
     }
   
     .analysis-summary {
       padding: 16px;
-      border-radius: 10px;
+      border-radius: 22px;
     }
   
     .analysis-summary h2 {

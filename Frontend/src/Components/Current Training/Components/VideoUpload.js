@@ -175,14 +175,16 @@ const VideoUpload = ({
       delete window._newUploadFile;
       proceedWithUpload(file);
     }
-  }, [proceedWithUpload]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (window._startDemoAfterReset) {
       delete window._startDemoAfterReset;
       startDemoVideo();
     }
-  }, [startDemoVideo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="training-video-container">

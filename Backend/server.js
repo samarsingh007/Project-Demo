@@ -251,7 +251,7 @@ app.post("/api/start-demo", async (req, res) => {
     await pool.query(
       `INSERT INTO sessions (id, user_id, status, summary, video_url, is_demo)
      VALUES ($1, $2, $3, $4, $5, $6)`,
-      [sessionId, userId, "processing", outputCsv, null, true]
+      [sessionId, userId, "processing", null, null, true]
     );
   }
   res.json({ videoId: sessionId });
@@ -360,12 +360,16 @@ app.post("/api/ai-chat", async (req, res) => {
     - Do not proceed with self-reflection or feedback until a video is available - you would be able to see 'A new video has successfully been uploaded' in the chat history.
   
     1️ Self-Reflection Phase
-       - Ask: "What do you think went well during your time with ${child}?"
-       - Ask: "What do you think could have been done differently?"
-       - After two user answers, IMMEDIATELY move to Feedback Phase.
+        - The first question has already been asked in a predefinded message. Next questions:
+       - Ask: "If you were to replay this video, what would you try differently to support ${child}'s learning or communication?"
+       - Ask: "How did you feel during this interaction, and how do you think ${child} felt? What might this tell you about their needs?"
+       - After these user answers, IMMEDIATELY move to Feedback Phase.
   
     2️ Feedback Phase
       - Explicitly say you're "still analyzing" the video and will send it shortly. 
+    
+    3 Future Goals Phase - after ai feedback -
+      - Based on what you observed, what is one small goal you’d like to focus on for the next interaction?
   
      **Important Rules**
     - Answer user questions at any time, but **always return to the structured coaching flow**.
@@ -530,6 +534,9 @@ async function handleAnalysisComplete(data) {
     console.log(`✅ Feedback sent for video ${videoId}`);
 
     feedbackPending[videoId] = false;
+    if (userId) {
+    await generateTrainingSummary(feedbackReply, videoId, userId);
+  }
   } catch (err) {
     console.error("Error sending auto-feedback after analysis:", err);
   }
@@ -580,7 +587,7 @@ app.post("/upload", upload.single("video"), async (req, res) => {
       await pool.query(
         `INSERT INTO sessions (id, user_id, status, summary, video_url, is_demo)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-        [videoId, userId, "processing", outputCsv, videoUrl, false]
+        [videoId, userId, "processing", null, videoUrl, false]
       );
     }
     allData.set(videoId, {
@@ -753,7 +760,6 @@ app.get("/api/fidelity-messages", (req, res) => {
   res.json(allFidelityMessages);
 });
 
-// In your backend
 app.get("/api/sessions/:userId", async (req, res) => {
   const { userId } = req.params;
 
@@ -786,12 +792,103 @@ app.get("/api/analysis-details/:sessionId", async (req, res) => {
       return res.status(404).json({ error: "Session not found" });
     }
 
-    res.json({ summary: result.rows[0].summary });
+    let summary = result.rows[0].summary;
+
+    // If it's a string (from OpenAI), parse it into JSON
+    if (typeof summary === "string") {
+      try {
+        summary = JSON.parse(summary);
+      } catch (parseError) {
+        console.warn("⚠️ Stored summary is not valid JSON. Returning raw string.");
+        // fallback to raw string if parsing fails
+      }
+    }
+
+    res.json({ summary });
   } catch (err) {
-    console.error("Error fetching analysis summary:", err);
+    console.error("❌ Error fetching analysis summary:", err);
     res.status(500).json({ error: "Failed to fetch summary" });
   }
 });
+
+async function generateTrainingSummary(feedbackReply, videoId, userId) {
+  try {
+    // 1) Fetch self-reflection chat and final ai feedback from DB
+    const [chatResult] = await Promise.all([
+      pool.query(
+        `SELECT role, message
+         FROM conversation_history
+         WHERE session_id = $1
+         AND role IN ('user', 'assistant')
+         AND message ILIKE ANY (ARRAY[
+           '%What do you think went well%',
+           '%What do you think could have been done differently%',
+           '%skipped%',
+           '%still analyzing%'  -- Optional: if you want to trim after this
+         ])
+         ORDER BY created_at ASC`,
+        [videoId]
+      )
+    ]);
+
+    const conversationObject = chatResult.rows.map(row => ({
+      role: row.role,
+      message: row.message
+    }));
+
+    const systemPrompt = `
+You are reviewing a coaching conversation between a parent and an AI assistant.
+Return a JSON object with exactly these keys:
+
+{
+  "feedback": "The exact AI feedback from the system",
+  "chatTranscript": [
+    {"role": "...", "message": "..."}
+  ],
+  "chatSummary": "A short 3–4 line summary of the user's self-reflection phase"
+}
+
+Use the self-reflection Q&A phase only — where the AI asks what went well and what could’ve been improved, and the user responds. Ignore the rest.
+
+Output valid JSON only. No markdown or explanation.
+`.trim();
+
+    // 3) Call OpenAI
+    const openaiResponse = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: JSON.stringify({
+              feedback: feedbackReply,
+              chatTranscript: conversationObject
+            })
+          }
+        ],
+        temperature: 0,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        }
+      }
+    );
+
+    const summary = openaiResponse.data.choices[0].message.content;
+
+    await pool.query(
+      `UPDATE sessions SET summary = $1, updated_at = NOW() WHERE id = $2`,
+      [summary, videoId]
+    );
+
+    console.log(`✅ Summary (with chat + feedback) saved for ${videoId}`);
+  } catch (err) {
+    console.error("❌ Error generating or saving summary:", err);
+  }  
+  io.emit("analysis_complete", { videoId, userId });
+};
 
 io.on("connection", (socket) => {
   console.log("Client connected to WebSocket");
@@ -859,73 +956,6 @@ io.on("connection", (socket) => {
   
     io.emit("analysis_progress", data);
   });
-
-  socket.on("analysis_complete", async ({ videoId, userId }) => {
-    const storeData = allData.get(videoId);
-    if (!storeData || !storeData.analysisSegments) return;
-  
-    const analysisData = storeData.analysisSegments;
-
-    const formattedAnalysis = analysisData.map((segment, idx) => ({
-      index: idx + 1,
-      timestamp: segment.beginEnd,
-      strategy: segment.strategy,
-      fidelity_score: segment.fidelityScore,
-      reasoning: segment.aiReasoning,
-    }));
-    
-    
-      const summaryPrompt = `
-      You are a training coach reviewing the following analysis segments from a parent-child interaction video. Your task is to create a **structured training session summary** in the following format exactly:
-      
-     Based on the provided analysis data, return the following items as a clean JSON object with these exact keys:
-
-      {
-        "date": "Full date like March 26, 2025",
-        "topic": "Short topic title",
-        "identified_problems": ["Problem 1", "Problem 2", ...],
-        "suggestions": ["Suggestion 1", "Suggestion 2", ...],
-        "key_highlights": ["Highlight 1", "Highlight 2", ...],
-        "learning_outcomes": ["Outcome 1", "Outcome 2", ...],
-        "next_steps": ["Step 1", "Step 2", ...]
-      }
-      Elaborate in each point.
-
-      Your output must only include this JSON. No commentary or explanation.
-      `.trim();
-    try {
-      const openaiResponse = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: summaryPrompt },
-            { role: "user", content: JSON.stringify(formattedAnalysis) }
-          ],
-          temperature: 0.3,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          }
-        }
-      );
-  
-      const summary = openaiResponse.data.choices[0].message.content;
-  
-      await pool.query(
-        `UPDATE sessions SET summary = $1, updated_at = NOW() WHERE id = $2`,
-        [summary, videoId]
-      );
-  
-      console.log(`✅ Summary generated and saved for ${videoId}`);
-    } catch (err) {
-      console.error("❌ Error generating or saving summary:", err);
-    }
-    io.emit("analysis_complete", { videoId, userId });
-  }); 
-
   socket.on("disconnect", () => {
     console.log("Client disconnected");
   });

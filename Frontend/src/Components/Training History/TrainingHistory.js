@@ -186,12 +186,15 @@ const TrainingHistory = ({ userId, isMobile }) => {
   // Render
   return (
     <div className="training-container">
-      {/* If on mobile and user hasn't opened the analysis, show the session list. 
-          If on desktop or user closed analysis, also show session list. 
-      */}
       {!isMobile || !showAnalysisView ? (
         <div className="training-sidebar">
           <h2>Your Training History</h2>
+          {Object.keys(groupedByDate).length === 0 ? (
+          <div className="empty-message">
+            <p>📭 You haven’t uploaded any sessions yet.</p>
+            <p>Once you upload a video, it’ll show up here for review.</p>
+          </div>
+        ) : (
           <ul className="date-group-list">
             {Object.keys(groupedByDate).map((date) => (
               <li key={date} className="date-group">
@@ -227,8 +230,9 @@ const TrainingHistory = ({ userId, isMobile }) => {
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
+        )}
+      </div>
+    ) : null}
 
       {/* Mobile "analysis" view mode */}
       {isMobile && showAnalysisView ? (

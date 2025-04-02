@@ -1,3 +1,4 @@
+/* General container styling */
 .auth-container {
   position: relative;
   min-height: 100vh;
@@ -5,8 +6,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #f5f5f5; /* Material-UI background color */
+  font-family: 'Roboto', sans-serif; /* Material-UI typography */
 }
 
+/* Wave background */
 .wave-background {
   position: absolute;
   width: 100%;
@@ -15,22 +19,22 @@
 }
 
 .wave-background svg {
-  position: absolute;
   object-fit: cover;
   display: block;
   width: 100%;
   height: 100%;
 }
 
+/* Auth content */
 .auth-content {
   margin-top: 90px;
   position: relative;
   z-index: 10;
-  background: transparent;
+  background: #ffffff; /* Material-UI card background */
   text-align: center;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  opacity: 0;
+  padding: 2rem; /* Use consistent spacing */
+  border-radius: 8px; /* Material-UI border radius */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Material-UI elevation */
   animation: fadeInZoom 1s ease-in-out forwards;
 }
 
@@ -62,16 +66,16 @@
   width: 70%;
 }
 
+/* Typography */
 .auth-content h1 {
-  border: 5px solid #4e0487ba;
-  border-radius: 200px;
-  padding: 25px;
-  font-size: 3rem;
-  color: #4e0487ba;
-  animation: fadeInZoomPAC 0.7s ease-in-out forwards;
+  font-size: 2rem; /* Material-UI heading size */
+  color: #3f51b5; /* Material-UI primary color */
+  margin-bottom: 1rem;
 }
 
 .auth-content h2 {
+  font-size: 1.5rem;
+  color: #757575; /* Material-UI text secondary color */
   margin-bottom: 1rem;
 }
 
@@ -79,13 +83,14 @@
   color: red;
 }
 
+/* Role section */
 .role-section {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
   margin-bottom: 1rem;
-  color: #4e0487ba;
+  color: #3f51b5; /* Material-UI primary color */
 }
 
 .role-section input[type="radio"] {
@@ -98,58 +103,74 @@
 }
 
 .role-section label {
-  position: relative;
   padding: 4px 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 4px; /* Material-UI border radius */
   transition: all 0.3s ease;
-  user-select: none;
-  background-color: white;
+  background-color: #fff;
   color: #555;
-  border: 2px solid transparent;
+  border: 1px solid #ccc;
 }
 
 .role-section label:hover {
-  background-color: #eaeaea;
+  background-color: #f5f5f5; /* Material-UI hover background */
 }
 
 .role-section input[type="radio"]:checked[value="parent"] + label {
-  background-color: #5030e5;
+  background-color: #3f51b5; /* Material-UI primary color */
   color: #fff;
-  box-shadow: 0px 3px 8px rgba(0, 123, 255, 0.4);
+  box-shadow: 0px 3px 8px rgba(63, 81, 181, 0.4); /* Material-UI shadow */
 }
 
 .role-section input[type="radio"]:checked[value="professional"] + label {
-  background-color: #ff9226;
+  background-color: #ff9800; /* Material-UI warning color */
   color: #fff;
-  box-shadow: 0px 3px 8px rgba(255, 90, 95, 0.4);
+  box-shadow: 0px 3px 8px rgba(255, 152, 0, 0.4);
 }
 
 .role-section input[type="radio"]:checked + label {
   transform: scale(1.05);
 }
+
+/* Input fields */
 .input-box {
   display: block;
   width: 100%;
   margin: 0.5rem 0;
   padding: 0.75rem;
   font-size: 1rem;
-  border-radius: 15px;
+  border-radius: 4px; /* Material-UI border radius */
   border: 1px solid #ccc;
   box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
-.login-button button {
-  margin-top: 1rem;
+.input-box:focus {
+  border-color: #3f51b5; /* Material-UI primary color */
+  outline: none;
+}
+
+/* Buttons */
+.login-button button,
+.guest-button,
+.continue-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   border: none;
-  background-color: #5030e5;
-  color: #fff;
-  border-radius: 15px;
+  border-radius: 4px; /* Material-UI border radius */
   cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.login-button button {
+  background-color: #3f51b5; /* Material-UI primary color */
+  color: #fff;
+}
+
+.login-button button:hover {
+  background-color: #303f9f; /* Material-UI primary dark color */
 }
 
 .auth-content .toggle-auth {
@@ -172,29 +193,23 @@
 
 .guest-button {
   background: none;
-  color: #5030e5;
-  border: 1px solid #5030e5;
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 15px;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 1.5rem;
-  transition: 0.3s;
+  color: #3f51b5;
+  border: 1px solid #3f51b5;
 }
 
 .guest-button:hover {
-  background: #5030e5;
+  background: #3f51b5;
   color: #fff;
 }
 
+/* Guest warning */
 .guest-warning {
   margin-top: 10px;
   padding: 10px;
-  background: rgba(255, 0, 0, 0.1);
-  border: 1px solid red;
-  border-radius: 15px;
-  color: red;
+  background: rgba(244, 67, 54, 0.1); /* Material-UI error light color */
+  border: 1px solid #f44336; /* Material-UI error color */
+  border-radius: 4px; /* Material-UI border radius */
+  color: #f44336;
   text-align: center;
   opacity: 0;
   visibility: hidden;
@@ -207,19 +222,12 @@
 }
 
 .continue-button {
-  background: red;
+  background: #f44336; /* Material-UI error color */
   color: #fff;
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: 0.3s;
 }
 
 .continue-button:hover {
-  background: darkred;
+  background: #d32f2f; /* Material-UI error dark color */
 }
 
 @media (max-width: 1023px) {
@@ -248,23 +256,18 @@
   }
   .auth-content {
     max-width: 100%;
-    padding: 20px;
+    padding: 1.5rem;
   }
 
   .auth-content h1 {
-    margin-top: 30px;
     font-size: 1.5rem;
-    padding: 15px;
   }
 
   .input-box {
-    padding: 12px;
+    padding: 0.5rem;
   }
 
-  .login-button button {
-    font-size: 1rem;
-  }
-
+  .login-button button,
   .guest-button {
     font-size: 0.9rem;
   }

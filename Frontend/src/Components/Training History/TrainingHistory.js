@@ -4,20 +4,25 @@ import "./TrainingHistory.css";
 import dropdownIcon from "../../Assets/arrow-down.svg";
 import { io } from "socket.io-client";
 
-const TrainingHistory = ({ userId, isMobile }) => {
+const TrainingHistory = ({ userId, isMobile, onBack, showAnalysisView, setShowAnalysisView }) => {
   const [sessions, setSessions] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [analysisDetails, setAnalysisDetails] = useState([]);
   const [expandedDates, setExpandedDates] = useState({});
-  const [showAnalysisView, setShowAnalysisView] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch user sessions initially
   useEffect(() => {
     if (!userId) return;
     axios
       .get(`${process.env.REACT_APP_API_BASE_URL}/api/sessions/${userId}`)
-      .then((res) => setSessions(res.data))
-      .catch((err) => console.error("Error fetching sessions", err));
+      .then((res) => {setSessions(res.data); 
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching sessions", err);
+        setIsLoading(false);
+      });
   }, [userId]);
 
   // Render the final summary from the DB
@@ -184,8 +189,19 @@ const TrainingHistory = ({ userId, isMobile }) => {
   };
 
   // Render
+  if (isLoading) {
+    return (
+      <div className="training-container loading-state">
+        <div className="loading-message">
+          <div className="spinner" />
+          <p>Loading your training history...</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
-    <div className="training-container">
+    <div className="training-container fade-in-training">
       {!isMobile || !showAnalysisView ? (
         <div className="training-sidebar">
           <h2>Your Training History</h2>
@@ -198,7 +214,7 @@ const TrainingHistory = ({ userId, isMobile }) => {
           <ul className="date-group-list">
             {Object.keys(groupedByDate).map((date) => (
               <li key={date} className="date-group">
-                <button 
+                <div 
                   className="date-toggle" 
                   onClick={() => toggleDateGroup(date)}
                 >
@@ -208,20 +224,22 @@ const TrainingHistory = ({ userId, isMobile }) => {
                     className={`dropdown-arrow ${expandedDates[date] ? "" : "rotated"}`}
                   />
                   {date}
-                </button>
+                </div>
                 <div className={`session-collapse ${expandedDates[date] ? "expanded" : ""}`}>
                   {expandedDates[date] && (
-                    <ul>
+                    <ul className="session-list">
                       {groupedByDate[date].map((s, index) => (
                         <li key={s.id}>
-                          <button
-                            className={s.id === selectedSessionId ? "active" : ""}
-                            onClick={() => handleSessionClick(s.id)}
-                          >
-                            {index + 1}. {s.is_demo ? "Demo Video" : "User Upload"}
-                            {" — "}
-                            {formatDateTime(s.created_at)}
-                          </button>
+                            <button
+                              className={`session-button ${s.id === selectedSessionId ? "active" : ""}`}
+                              onClick={() => handleSessionClick(s.id)}
+                            >
+                              <div className="session-info-row">
+                                <span className="session-number">{index + 1}.</span>
+                                <span className="session-type">{s.is_demo ? "Demo Video" : "User Upload"}</span>
+                              </div>
+                              <span className="session-time">{formatDateTime(s.created_at)}</span>
+                            </button>
                         </li>
                       ))}
                     </ul>
@@ -234,9 +252,16 @@ const TrainingHistory = ({ userId, isMobile }) => {
       </div>
     ) : null}
 
-      {/* Mobile "analysis" view mode */}
       {isMobile && showAnalysisView ? (
         <div className="analysis-panel">
+          <button
+            className="back-button-training"
+            onClick={() => {
+              setShowAnalysisView(false);
+            }}
+          >
+            ← Back
+          </button>
           {renderAnalysisSummary()}
         </div>
       ) : (

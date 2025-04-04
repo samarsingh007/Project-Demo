@@ -3,6 +3,7 @@ import supabase from "../supabaseClient";
 import "./CSS/AuthPage.css";
 import logo from "../Assets/Logo.svg";
 import { useNavigate } from "react-router-dom";
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 const AuthPage = ({ setIsGuest }) => {
   const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ const AuthPage = ({ setIsGuest }) => {
   const [showGuestWarning, setShowGuestWarning] = useState(false);
   const [name, setName] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -157,6 +159,7 @@ const AuthPage = ({ setIsGuest }) => {
       <div className="logo-container">
         <img src={logo} alt="Robot Logo" className="logo" />
       </div>
+      <div className="content-wrapper">
       <div className="wave-background">
         <svg
           id="svg"
@@ -191,11 +194,19 @@ const AuthPage = ({ setIsGuest }) => {
           ></path>
         </svg>
       </div>
-      <div className="auth-content">
-        <h1>Parent's AI Coach (PAC)</h1>
-        <div className="auth-form">
-          <div className="role-section">
-            <span>MY ROLE</span>
+      <div className="auth-card-header"> 
+        <div className="auth-header">
+        <h1>PAC.AI</h1>
+        <h2>{isSignUp ? "Create Account" : "Welcome"}</h2>
+        <p className="subtitle">
+            {isSignUp 
+              ? "Join our community and get started" 
+              : "Sign in to continue your journey"}
+          </p>
+          </div>
+          {/* <div className="role-selector">
+          <div className="role-label">I am a:</div>
+          <div className="role-options">
             <input
               type="radio"
               id="role-parent"
@@ -203,112 +214,170 @@ const AuthPage = ({ setIsGuest }) => {
               value="parent"
               defaultChecked
             />
-            <label for="role-parent">Parent</label>
-
+            <label htmlFor="role-parent">
+              Parent
+            </label>
+            
             <input
               type="radio"
               id="role-prof"
               name="role"
               value="professional"
             />
-            <label for="role-prof">Professional</label>
+            <label htmlFor="role-prof">
+              Professional
+            </label>
           </div>
+        </div> */}
+        </div>
+        <div className="auth-card">
           <h2>{isSignUp ? "Sign Up" : "Sign In"}</h2>
 
-          {error && <p className="error">{error}</p>}
-          {message && <p className="message">{message}</p>}
+          {error && <div className="alert alert-error">{error}</div>}
+          {message && <div className="alert alert-success">{message}</div>}
 
-          {isSignUp && (
-            <>
-              <input
-                className="input-box"
-                type="Name"
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-              />
-            </>
-          )}
-
-          <input
-            className="input-box"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                if (showForgotPassword) {
+          <form className="auth-form" onSubmit={e => { e.preventDefault(); if (showForgotPassword) {
                   handleForgotPassword();
                 } else {
                   handleAuth();
-                }
-              }
-            }}
-          />
-          {!showForgotPassword && (
-            <input
-              className="input-box"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-            />
+                } }}>
+          {isSignUp && (
+            <div className="form-group">
+              <label htmlFor="name">Full Name</label>
+              <div className="input-wrapper">
+                <span className="input-icon"><FaUser /></span>
+                <input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  required
+                />
+              </div>
+            </div>
           )}
-          <div className="login-button">
-            {!showForgotPassword ? (
-              <button onClick={handleAuth}>
-                {isSignUp ? "Create Account" : "Login"}
-              </button>
-            ) : (
-              <button onClick={handleForgotPassword}>Reset Password</button>
-            )}
+
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <div className="input-wrapper">
+              <span className="input-icon"><FaEnvelope /></span>
+              <input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+              />
+            </div>
           </div>
-
-          {!isSignUp && !showForgotPassword && (
-            <p
-              onClick={() => setShowForgotPassword(true)}
-              className="toggle-auth"
-            >
-              Forgot Password?
-            </p>
+          {!showForgotPassword && (
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <div className="input-wrapper">
+                <span className="input-icon"><FaLock /></span>
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  required
+                />
+                <button 
+                  type="button"
+                  className="toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}
+                </button>
+              </div>
+            </div>
           )}
+          <div className="action-buttons">
+            <button type="submit" className="primary-button">
+              {showForgotPassword 
+                ? "Reset Password" 
+                : isSignUp 
+                  ? "Create Account" 
+                  : "Sign In"}
+            </button>
+            
+            <button 
+              type="button"
+              className="guest-button" 
+              onClick={continueWithoutSignIn}
+            >
+              Continue as Guest
+            </button>
+          </div>
+        </form>
 
+        {/* Secondary Actions */}
+        <div className="auth-footer">
+          {!isSignUp && !showForgotPassword && (
+            <button 
+              type="button"
+              className="text-button"
+              onClick={() => setShowForgotPassword(true)}
+            >
+              Forgot your password?
+            </button>
+          )}
+          
           {showForgotPassword && (
-            <p
+            <button 
+              type="button"
+              className="text-button"
               onClick={() => setShowForgotPassword(false)}
-              className="toggle-auth"
             >
               Back to Sign In
-            </p>
+            </button>
           )}
-
-          <p
+          
+          <button
+            type="button"
+            className="text-button switch-mode"
             onClick={() => {
               setIsSignUp(!isSignUp);
               setShowForgotPassword(false);
             }}
-            className="toggle-auth"
           >
             {isSignUp
               ? "Already have an account? Sign in"
               : "Need an account? Sign up"}
-          </p>
-          <button className="guest-button" onClick={continueWithoutSignIn}>
-            Continue without Sign In
           </button>
-          <div className={`guest-warning ${showGuestWarning ? "show" : ""}`}>
-            <p>⚠️ Your session will not be saved. Do you want to continue?</p>
-            <button className="continue-button" onClick={proceedAsGuest}>
-              Continue
-            </button>
-          </div>
         </div>
       </div>
+      {showGuestWarning && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>⚠️ Guest Session Warning</h3>
+            <p>Your data and progress will not be saved when using a guest account.</p>
+            <p>Are you sure you want to continue?</p>
+            <div className="modal-actions">
+              <button 
+                className="secondary-button"
+                onClick={() => setShowGuestWarning(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="danger-button"
+                onClick={proceedAsGuest}
+              >
+                Continue as Guest
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  );
+    </div>
+);
 };
-
 export default AuthPage;

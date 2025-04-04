@@ -1,0 +1,129 @@
+/* MobileHomePage.css */
+
+.mobile-dashboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: #f8f9fa;
+  overflow-y: auto;
+}
+
+/* Main content styles */
+.mobile-homepage {
+  padding: 16px;
+  flex: 1;
+}
+
+.welcome-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  text-align: left;
+}
+
+.welcome-heading {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.welcome-tagline {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #3a3a3a;
+}
+
+.welcome-description {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.plot-card {
+  padding: 0px;
+}
+
+.stats-section {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card, .history-card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-card {
+  align-items: center;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: #4a4a4a;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #007bff;
+  margin: auto 0;
+}
+
+.history-button {
+  background-color: #ff9c39;
+  color: white;
+  border: none;
+  border-radius: 26px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.history-button:hover {
+  background-color: #d4822f;
+}
+
+/* Make space at bottom for potential nav */
+.mobile-dashboard-wrapper {
+  padding-bottom: 16px;
+}
+
+.back-button-training {
+  margin: 10px;
+  display: flex;
+  font-size: 1rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  color: #673eb0;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1000;
+}

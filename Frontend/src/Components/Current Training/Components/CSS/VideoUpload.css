@@ -63,14 +63,15 @@
 }
 
 .demo-button.active {
-  background-color: #ff9d00b8;
-  color: #2f2f2f;
-  border: none;
+  background-color: rgba(255, 122, 0, 0.15);
+  color: #FF7A00;
+  border: 1px solid rgba(255, 122, 0, 0.3);
 }
 
 .transcription-button.active {
-  background-color: #a7a9edaa;
-  color: #2f2f2f;
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #6366F1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .orange-divider {
@@ -79,7 +80,12 @@
   border-radius: 1px;
 }
 
-.video-area, .video-area.active {
+.video-area.empty {
+  border: 2px dashed #D0D5DD;
+  margin: 15px;
+}
+
+.video-area.empty, .video-area.active {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -88,7 +94,7 @@
   min-height: 400px;
   height: auto;
   margin-top: 15px;
-  border-radius: 10px;
+  border-radius: 30px;
 }
 
 .video-placeholder {
@@ -175,6 +181,10 @@ video {
 }
 
 @media (max-width: 1024px) {
+  .training-video-container.empty {
+    height: 100%;
+  }
+
   .video-area.active{
     min-height: 0px;
   }
@@ -198,6 +208,18 @@ video {
   .choose-button-icon {
     width: 20px;
     height: 20px;
+  }
+
+  .video-area.empty {
+    min-height: 200px;
+    padding: 20px;
+  }
+
+  .video-area-container.empty {
+    height: 75%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .choose-button,

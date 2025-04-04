@@ -5,13 +5,13 @@ import HomePage from ".//Current Training/HomePage";
 import TrainingHistory from "./Training History/TrainingHistory";
 import DiagramLibrary from "./Diagram Library/DiagramLibrary";
 import "./CSS/MainContainer.css";
-import HomePageMobile from "./HomePageMobile";
+import MainContainerMobile from "./MainContainerMobile";
 
 const MainContainer = ({ onAppReload, userId, profile, setShowNameModal, isGuest, isMobile, refreshTrigger }) => {
   const [selectedPage, setSelectedPage] = useState("currentTraining");
   if (isMobile) {
     return (
-      <HomePageMobile
+      <MainContainerMobile
         userId = {userId}
         onAppReload={onAppReload}
         profile={profile}

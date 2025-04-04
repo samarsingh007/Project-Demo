@@ -5,10 +5,12 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 2000;  
+  animation: fadeIn-transcription 0.3s ease-out;
 }
 
 .transcription-modal-content {
@@ -63,4 +65,9 @@
 
 .timestamp-button:hover {
   text-decoration: underline;
+}
+
+@keyframes fadeIn-transcription {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

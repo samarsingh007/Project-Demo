@@ -26,7 +26,7 @@
   }
   
   .training-sidebar li {
-    margin-bottom: 10px;
+    margin-top: 10px;
   }
   
   .training-sidebar button {
@@ -63,7 +63,6 @@
     padding: 24px;
     border-radius: 16px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-    height: 100%;
   }
   
   .analysis-summary h2 {
@@ -82,12 +81,11 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 6px 0;
+    padding: 16px 0;
     font-size: 1rem;
     color: #333;
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
   }
   
   .dropdown-arrow {
@@ -110,6 +108,46 @@
   .session-collapse.expanded {
     height: auto;
     opacity: 1;
+  }
+
+  .session-list {
+    padding-left: 24px;
+  }
+
+  .session-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+    font-size: 16px;
+    text-align: left;
+    padding: 12px 16px;
+    border-radius: 12px;
+    width: 100%;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .session-info-row {
+    display: flex;
+    align-items: center;
+  }
+  
+  .session-number {
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  
+  .session-type {
+    font-weight: 500;
+  }
+  
+  .session-time {
+    color: #666;
+    font-size: 0.9em;
+    padding-left: 18px;
   }
   
   .empty-message {
@@ -137,22 +175,19 @@
     color: #555;
   }
   
-  .back-button {
-    margin-bottom: 1rem;
-    background: none;
-    border: none;
-    color: #555;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0.5rem;
-  }
-  
-  
   @media (max-width: 1024px) {
     .training-container {
       flex-direction: column;
       padding: 12px;
       border-radius: 22px;
+    }
+
+    .session-button {
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      background-color: #fff;
     }
   
     .training-sidebar {
@@ -161,6 +196,7 @@
       border-bottom: 1px solid #e0e0e0;
       padding-right: 0;
       margin-bottom: 20px;
+      text-align: center;
     }
   
     .training-sidebar h2 {
@@ -175,6 +211,13 @@
   
     .date-toggle {
       font-size: 1rem;
+      padding: 10px 0;
+    }
+
+    .date-group {
+      background-color: #ececec;
+      padding: 12px;
+      border-radius: 20px;
     }
   
     .dropdown-arrow {
@@ -217,3 +260,48 @@
     }
   }
   
+  
+.fade-in-training {
+  animation: fadeIn 0.4s ease-in-out both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loading-message {
+  text-align: center;
+  color: #555;
+  font-size: 1rem;
+}
+
+.spinner {
+  margin: 0 auto 16px;
+  width: 32px;
+  height: 32px;
+  border: 4px solid #ddd;
+  border-top-color: #5030e5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -187,7 +187,7 @@ const VideoUpload = ({
   }, []);
 
   return (
-    <div className="training-video-container">
+    <div className={`training-video-container ${video ? "" : "empty"}`}>
       <div className="training-video-header">
         <div className="title-with-dot">
           <span className="orange-dot" />
@@ -237,8 +237,9 @@ const VideoUpload = ({
 
       <div className="orange-divider" />
 
+      <div className={`video-area-container ${video ? "" : "empty"}`}>
       <div
-        className={`video-area ${video ? "active" : ""}`}
+        className={`video-area ${video ? "active" : "empty"}`}
         onClick={() => {
           if (!video) {
             handleChooseClick();
@@ -279,6 +280,7 @@ const VideoUpload = ({
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

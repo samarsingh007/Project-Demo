@@ -113,7 +113,7 @@ const AuthPage = ({ setIsGuest }) => {
     try {
       const { data: existingUser } = await supabase
         .from("profiles")
-        .select("id")
+        .select("id", { head: false })
         .eq("email", email)
         .single();
 

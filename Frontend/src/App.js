@@ -10,6 +10,7 @@ import AuthPage from "./Components/AuthPage";
 import supabase from "./supabaseClient";
 import ResetPassword from "./Components/ResetPassword";
 import NameInputModal from "./Components/NameInputModal"
+import AuthCallback from "./AuthCallback";
 
 function App() {
   const [session, setSession] = useState(undefined);
@@ -111,6 +112,7 @@ function App() {
           }
         />
         <Route path="/login" element={<AuthPage setIsGuest={setIsGuest} />} />
+        <Route path="/auth/callback" element={<AuthCallback />} /> 
         <Route
           path="/Project-Demo"
           element={

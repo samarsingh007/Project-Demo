@@ -257,7 +257,7 @@ body {
   padding: 14px 40px 14px 40px;
   border: 1px solid #e0e5f2;
   border-radius: var(--input-radius);
-  font-size: 15px;
+  font-size: 16px;
   background-color: #f5f7ff;
   color: var(--text-color);
   transition: var(--transition);

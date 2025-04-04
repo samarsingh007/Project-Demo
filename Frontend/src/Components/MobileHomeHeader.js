@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../supabaseClient";
-import UserAvatar from "../Assets/user-avatar.png";
+import UserAvatar from "../Assets/user-avatar.svg";
 import Menu from "../Assets/menu.svg"
 import "./CSS/MobileHomeHeader.css";
 import { FaUserEdit, FaSignOutAlt, FaArrowLeft } from "react-icons/fa";

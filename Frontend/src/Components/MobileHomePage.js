@@ -73,7 +73,7 @@ const MobileHomePage = ({ profile, userId, isMobile, setShowNameModal }) => {
         {/* Greeting section */}
         <div className="welcome-card">
         <p className="welcome-tagline">Reflect, improve, and grow — one session at a time.</p>
-        <p className="welcome-description">
+        <p className="section-description">
           Review your parent-child interaction videos, reflect meaningfully, and get AI-powered insights to guide your next steps.
         </p>
       </div>
@@ -98,7 +98,7 @@ const MobileHomePage = ({ profile, userId, isMobile, setShowNameModal }) => {
             className="history-button"
             onClick={() => setViewHistory(true)}
           >
-            View History →
+            View History
           </button>
         </div>
         </div>

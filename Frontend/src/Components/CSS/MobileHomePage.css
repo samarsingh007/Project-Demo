@@ -31,15 +31,15 @@
 }
 
 .welcome-tagline {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-size: 1rem;
   font-weight: 500;
   color: #3a3a3a;
 }
 
-.welcome-description {
+.section-description {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: #555;
   line-height: 1.5;
 }
@@ -78,7 +78,7 @@
 }
 
 .section-title {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 500;
   margin: 0 0 8px 0;
   color: #4a4a4a;
@@ -87,7 +87,7 @@
 .stat-number {
   font-size: 1.8rem;
   font-weight: 600;
-  color: #007bff;
+  color: #4e0487ba;
   margin: auto 0;
 }
 
@@ -100,7 +100,7 @@
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  margin-top: auto;
+  margin-top: 15px;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -445,7 +445,9 @@ const ChatInterface = ({
             {msg.sender === "bot" ? (
               <img src={BotLogo} alt="Bot" className="bot-avatar" />
             ) : msg.sender === "slp" ? (
-              <img src={SLPLogo} alt="SLP" className="slp-avatar" />
+              <div className="slp-chat-avatar-container">
+              <img src={selectedSlp?.avatar} alt={selectedSlp?.name} className="slp-chat-avatar" />
+              </div>
             ) : null}
             <div className={`message-content ${msg.sender}`}>
               {msg.sender === "bot" && msg.timestamp && (

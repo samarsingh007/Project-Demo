@@ -20,7 +20,7 @@
   align-items: flex-start;
   margin-bottom: 10px;
   word-wrap: break-word;
-  color: #787486;
+  color: #000000;
   font-size: 1.1rem;
   max-width: 90%;
 }
@@ -114,11 +114,25 @@
   transform: scale(1.05);
 }
 
-.bot-avatar,
-.slp-avatar {
+.bot-avatar {
   width: 35px;
   height: 35px;
   margin-right: 8px;
+}
+
+.slp-chat-avatar-container {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.slp-chat-avatar {
+  width: 56px;
+  height: 60px;
+  object-fit: cover;
 }
 
 .message-content {

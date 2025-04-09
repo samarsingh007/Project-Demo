@@ -50,11 +50,19 @@
     background-color: #e4ebf5;
   }
   
-  .slp-list-avatar {
-    width: 48px;
-    height: 48px;
+  .slp-list-avatar-container {
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
+    overflow: hidden;
     margin-right: 12px;
+    flex-shrink: 0;
+  }
+  
+  .slp-list-avatar {
+    width: 54px;
+    height: 58px;
+    object-fit: cover;
   }
   
   .slp-list-text {

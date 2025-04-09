@@ -189,6 +189,33 @@ const chatMessages = {
     },
   ],
 };
+function splitMessage(text, maxLen = 180) {
+  const sentenceChunks = text
+    .match(/[^.!?]+[.!?]+(\s+|$)|.+$/g)
+    ?.map(s => s.trim())
+    .filter(Boolean) || [];
+
+  const finalChunks = [];
+
+  sentenceChunks.forEach(sentence => {
+    if (sentence.length <= maxLen) {
+      finalChunks.push(sentence);
+    } else {
+      let cur = '';
+      sentence.split(' ').forEach(word => {
+        if ((cur + ' ' + word).trim().length > maxLen) {
+          finalChunks.push(cur.trim());
+          cur = word;
+        } else {
+          cur += ' ' + word;
+        }
+      });
+      if (cur) finalChunks.push(cur.trim());
+    }
+  });
+
+  return finalChunks;
+}
 
 function analyzeVideoPython(
   videoId,
@@ -421,7 +448,8 @@ app.post("/api/ai-chat", async (req, res) => {
       );
     }
 
-    res.json({ botReply });
+    const botReplyChunks = splitMessage(botReply);
+    res.json({ botReplyChunks });
     if (botReply.includes("still analyzing")) {
       feedbackPending[videoId] = true;
       if (analysisCompleted[videoId]) {

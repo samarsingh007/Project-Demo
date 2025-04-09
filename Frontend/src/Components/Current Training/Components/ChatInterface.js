@@ -239,12 +239,10 @@ const ChatInterface = ({
       const data = await response.json();
       setIsTyping(false);
 
-      if (data.botReply) {
-        setAiMessages((prev) => [
-          ...prev,
-          { text: data.botReply, sender: "bot" },
-        ]);
-      }
+      if (data.botReplyChunks) {
+        const newMsgs = data.botReplyChunks.map(txt => ({ text: txt, sender: "bot" }));
+        setMessageQueue(prevQueue => [...prevQueue, ...newMsgs]);
+      }      
     } catch (error) {
       console.error("Error calling /api/ai-chat:", error);
       setIsTyping(false);
@@ -346,12 +344,10 @@ const ChatInterface = ({
         const data = await response.json();
         setIsTyping(false);
 
-        if (data.botReply) {
-          setAiMessages((prev) => [
-            ...prev,
-            { text: data.botReply, sender: "bot" },
-          ]);
-        }
+        if (data.botReplyChunks) {
+          const newMsgs = data.botReplyChunks.map(txt => ({ text: txt, sender: "bot" }));
+          setMessageQueue(prevQueue => [...prevQueue, ...newMsgs]);
+        }        
       } catch (error) {
         console.error("Error calling /api/ai-chat:", error);
         setIsTyping(false);

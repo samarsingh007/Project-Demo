@@ -195,14 +195,28 @@ function splitMessage(text, maxLen = 180) {
     ?.map(s => s.trim())
     .filter(Boolean) || [];
 
-  const finalChunks = [];
+  const combinedChunks = [];
+  let temp = '';
 
-  sentenceChunks.forEach(sentence => {
-    if (sentence.length <= maxLen) {
-      finalChunks.push(sentence);
+  for (let i = 0; i < sentenceChunks.length; i++) {
+    if (!temp) {
+      temp = sentenceChunks[i];
+    } else {
+      temp += ' ' + sentenceChunks[i];
+      combinedChunks.push(temp.trim());
+      temp = '';
+    }
+  }
+
+  if (temp) combinedChunks.push(temp.trim());
+
+  const finalChunks = [];
+  combinedChunks.forEach(chunk => {
+    if (chunk.length <= maxLen) {
+      finalChunks.push(chunk);
     } else {
       let cur = '';
-      sentence.split(' ').forEach(word => {
+      chunk.split(' ').forEach(word => {
         if ((cur + ' ' + word).trim().length > maxLen) {
           finalChunks.push(cur.trim());
           cur = word;

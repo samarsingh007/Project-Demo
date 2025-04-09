@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import "./CSS/ChatInterface.css";
+import SLPSelector from "./SLPSelector";
 
 import BotLogo from "../../../Assets/main-logo.svg";
 // import VoiceIcon from "../../../Assets/voice.svg";
 import SLPLogo from "../../../Assets/slp.svg";
 import { io } from "socket.io-client";
+import { FaArrowLeft } from "react-icons/fa";
 
 const ChatInterface = ({
   videoTime,
@@ -18,7 +20,7 @@ const ChatInterface = ({
   refreshTrigger,
 }) => {
   const [aiMessages, setAiMessages] = useState([]);
-  const [slpMessages, setSlpMessages] = useState([]);
+  const [slpConversations, setSlpConversations] = useState({});
   const [currentMessage, setCurrentMessage] = useState("");
   const [chatMode, setChatMode] = useState("ai");
   const [senderRole, setSenderRole] = useState("bot");
@@ -29,6 +31,7 @@ const ChatInterface = ({
   const [isTyping, setIsTyping] = useState(false);
   const [parentName, setParentName] = useState("");
   const [childName, setChildName] = useState("");
+  const [selectedSlp, setSelectedSlp] = useState(null);
 
   const processedMessages = useRef(new Set());
   const typingTimeoutRef = useRef(null);
@@ -37,8 +40,12 @@ const ChatInterface = ({
 
   const REACT_APP_API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-  const displayedMessages = chatMode === "ai" ? aiMessages : slpMessages;
-
+  const displayedMessages = useMemo(() => {
+    if (chatMode === "ai") return aiMessages;
+    if (selectedSlp) return slpConversations[selectedSlp.id] || [];
+    return [];
+  }, [chatMode, aiMessages, selectedSlp, slpConversations]);
+  
   useEffect(() => {
     const socket = io(REACT_APP_API_BASE_URL, {});
 
@@ -76,17 +83,10 @@ const ChatInterface = ({
         sender: senderRole,
       };
       setAiMessages([defaultAiMsg]);
-    } else if (chatMode === "slp" && slpMessages.length === 0) {
-      const defaultSlpMsg = {
-        text: "Hello, I'm your SLP (a human). Let me know how I can help you today!",
-        sender: senderRole,
-      };
-      setSlpMessages([defaultSlpMsg]);
     }
-  }, [chatMode, aiMessages.length, slpMessages.length, senderRole]);
+  }, [chatMode, aiMessages.length, slpConversations, senderRole, selectedSlp]);
 
   const fetchMessages = useCallback(async () => {
-    if (chatMode !== "ai") return;
     if (!context) return;
     if (context === "askParentName" || context === "askChildName") return;
 
@@ -111,14 +111,13 @@ const ChatInterface = ({
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
-  }, [context, chatMode, parentName, childName, REACT_APP_API_BASE_URL]);
+  }, [context, parentName, childName, REACT_APP_API_BASE_URL]);
 
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
 
   useEffect(() => {
-    if (chatMode !== "ai") return;
     if (messages.length > 0) {
       const newMessages = messages.filter(
         (msg) =>
@@ -129,10 +128,9 @@ const ChatInterface = ({
       });
       setMessageQueue((prevQueue) => [...prevQueue, ...newMessages]);
     }
-  }, [messages, chatMode]);
+  }, [messages]);
 
   useEffect(() => {
-    if (chatMode !== "ai") return;
     if (!isAwaitingResponse && messageQueue.length > 0 && !isTyping) {
       setIsTyping(true);
 
@@ -148,11 +146,10 @@ const ChatInterface = ({
         setIsTyping(false);
       }, 1000);
     }
-  }, [messageQueue, isAwaitingResponse, isTyping, chatMode]);
+  }, [messageQueue, isAwaitingResponse, isTyping]);
 
   useEffect(() => {
     if (newVideoUploaded) {
-      if (chatMode === "ai") {
         const videoUploadMessage = {
           text: "A new video has been successfully uploaded.",
           sender: senderRole,
@@ -173,20 +170,19 @@ const ChatInterface = ({
           setContext("introduction");
           return;
         }
-      } else {
-        setSlpMessages((prev) => [
-          ...prev,
-          {
-            text: "A new video has been uploaded (SLP mode).",
-            sender: senderRole,
-          },
-        ]);
+
+      if (chatMode === "slp" && selectedSlp) {
+        appendToSlp(selectedSlp.id, {
+          text: "A new video has been uploaded (SLP mode).",
+          sender: senderRole,
+          });
       }
       setNewVideoUploaded(false);
     }
   }, [
     newVideoUploaded,
     setNewVideoUploaded,
+    selectedSlp,
     chatMode,
     senderRole,
     parentName,
@@ -264,7 +260,7 @@ const ChatInterface = ({
     if (chatMode === "ai") {
       setAiMessages((prev) => [...prev, userMessage]);
     } else {
-      setSlpMessages((prev) => [...prev, userMessage]);
+      appendToSlp(selectedSlp.id, userMessage);
     }
     setCurrentMessage("");
 
@@ -272,14 +268,14 @@ const ChatInterface = ({
       setIsAwaitingResponse(false);
     }
 
-    if (chatMode === "slp") {
+    if (chatMode === "slp" && selectedSlp) {
       setIsTyping(true);
       setTimeout(async () => {
         const slpReply = {
-          text: "Your message has been shared with the professional. They will respond soon!",
+          text: "I have received your message and will respond soon!",
           sender: senderRole,
         };
-        setSlpMessages((prev) => [...prev, slpReply]);
+        appendToSlp(selectedSlp.id, slpReply);
         setIsTyping(false);
         const conversationHistory = [
           { role: "user-slp", content: userInput },
@@ -325,7 +321,7 @@ const ChatInterface = ({
       setChildName(userInput);
       setContext("introduction");
       return;
-    } else if (context === "base" || context === "LLM") {
+    } else if (context !== "askParentName" && context !== "askChildName") {
       try {
         setIsTyping(true);
 
@@ -364,6 +360,26 @@ const ChatInterface = ({
     }
   };
 
+  const handleSelectSlp = (slp) => {
+    setSelectedSlp(slp);
+    setSenderRole("slp");
+  
+    setSlpConversations((prev) => {
+      if (prev[slp.id]) return prev;
+      const greeting = {
+        text: `Hello, I'm ${slp.name}. Let me know how I can help you today!`,
+        sender: "slp",
+      };
+      return { ...prev, [slp.id]: [greeting] };
+    });
+  };
+
+  const appendToSlp = (slpId, newMsg) =>
+    setSlpConversations((prev) => ({
+      ...prev,
+      [slpId]: [...(prev[slpId] || []), newMsg],
+    }));
+  
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60)
@@ -405,12 +421,25 @@ const ChatInterface = ({
           onChange={() => {
             setChatMode("slp");
             setSenderRole("slp");
+            setSelectedSlp(null);
           }}
         />
         <label htmlFor="chat-slp">Chat with SLP</label>
       </div>
-
-      <div className="chat-box" ref={chatBoxRef}>
+      {chatMode === "slp" && !selectedSlp ? (
+         <SLPSelector onSelect={handleSelectSlp} />
+        ) : (
+          <>
+          {chatMode === "slp" && selectedSlp && (
+          <div className="slp-chat-header">
+            <button className="back-button-slp" onClick={() => setSelectedSlp(null)}>
+              <FaArrowLeft className="back-icon" />
+              Back
+            </button>
+            <span className="slp-name-header">{selectedSlp.name}</span>
+          </div>
+        )}
+        <div className="chat-box" ref={chatBoxRef}>
         {displayedMessages.map((msg, index) => (
           <div key={index} className={`chat-message ${msg.sender} fade-in`}>
             {msg.sender === "bot" ? (
@@ -478,21 +507,24 @@ const ChatInterface = ({
             <span className="dot"></span>
           </div>
         )}
-      </div>
+        </div>
 
-      <div className="input-container">
+        <div className="input-container">
         <input
           type="text"
           placeholder={
             chatMode === "ai"
               ? "Ask the AI Assistant..."
-              : "Send a message to the SLP..."
+              : selectedSlp
+              ? `Message ${selectedSlp.name}...`
+              : "Select an SLP first..."
           }
           value={currentMessage}
           onChange={(e) => setCurrentMessage(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") sendMessage();
           }}
+          disabled={chatMode === "slp" && !selectedSlp}
         />
 
         {chatMode === "ai" && context === "LLM" && (
@@ -501,14 +533,16 @@ const ChatInterface = ({
           </button>
         )}
 
-        <button className="send-button" onClick={sendMessage}>
+        <button className="send-button" onClick={sendMessage} disabled={chatMode === "slp" && !selectedSlp}>
           Send
         </button>
 
         {/* <button className="voice-button">
           <img src={VoiceIcon} alt="Voice" className="voice-icon" />
         </button> */}
-      </div>
+        </div>
+        </>
+      )}
     </div>
   );
 };

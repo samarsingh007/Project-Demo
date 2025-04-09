@@ -370,8 +370,10 @@ app.post("/api/ai-chat", async (req, res) => {
     
     3 Future Goals Phase - after ai feedback -
       - Based on what you observed, what is one small goal you’d like to focus on for the next interaction?
+      - After this, add an emptional support message that will help the user.
   
      **Important Rules**
+    - Be supportive and throw in some emotional support in each message to the user.
     - Answer user questions at any time, but **always return to the structured coaching flow**.
     - If a user does not respond meaningfully, gently **guide them forward** without repeating questions too often.
     - If a user explicitly says [skipped], **do so immediately**.

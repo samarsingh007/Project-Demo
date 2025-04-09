@@ -1,0 +1,76 @@
+/* Container styles */
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .slp-list-container {
+    flex: 1; /* fills available space in .chat-interface */
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.4s ease-in-out;
+    overflow: hidden; /* contain scroll only within .slp-list */
+  }  
+  
+  .slp-list-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 16px;
+    color: #2c3e50;
+    text-align: center;
+  }
+  
+  .slp-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 4px; /* Optional: visual space for scrollbar */
+  }
+  
+  
+  .slp-list-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 20px;
+    background-color: #ebebeb;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .slp-list-item:hover {
+    background-color: #e4ebf5;
+  }
+  
+  .slp-list-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+  }
+  
+  .slp-list-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+  }
+  
+  .slp-list-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  .slp-list-expertise {
+    font-size: 0.85rem;
+    color: #666;
+  }
+  

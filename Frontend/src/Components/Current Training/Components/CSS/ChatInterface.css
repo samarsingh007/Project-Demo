@@ -308,6 +308,52 @@
   background: transparent;
 }
 
+.back-button-slp {
+  display: flex;
+  font-size: 1rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  color: #673eb0;
+  cursor: pointer;
+  z-index: 1000;
+  align-items: center;
+}
+
+.slp-chat-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: start; /* keep back button on the left */
+  height: 48px;
+  border-bottom: 1px solid #ddd;
+}
+
+.slp-name-header {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
+  white-space: nowrap;
+}
+
+.slp-chat-fade-in {
+  animation: fadeInChat 0.4s ease-in-out;
+}
+
+@keyframes fadeInChat {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 1024px) {
   .chat-message {
     font-size: 1rem;

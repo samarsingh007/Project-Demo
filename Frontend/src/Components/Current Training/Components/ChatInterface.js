@@ -4,7 +4,6 @@ import SLPSelector from "./SLPSelector";
 
 import BotLogo from "../../../Assets/main-logo.svg";
 // import VoiceIcon from "../../../Assets/voice.svg";
-import SLPLogo from "../../../Assets/slp.svg";
 import { io } from "socket.io-client";
 import { FaArrowLeft } from "react-icons/fa";
 
@@ -502,7 +501,9 @@ const ChatInterface = ({
             {chatMode === "ai" ? (
               <img src={BotLogo} alt="Bot" className="bot-avatar" />
             ) : (
-              <img src={SLPLogo} alt="Bot" className="slp-avatar" />
+              <div className="slp-chat-avatar-container">
+              <img src={selectedSlp?.avatar} alt={selectedSlp?.name} className="slp-chat-avatar" />
+              </div>
             )}
             <span className="dot"></span>
             <span className="dot"></span>
